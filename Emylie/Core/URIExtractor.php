@@ -15,6 +15,9 @@ namespace Emylie\Core {
 			if(is_null($uri)){
 				$uri = $_SERVER['REQUEST_URI'];
 			}
+			$parts = explode('?', $uri);
+			$uri = $parts[0];
+			$query = isset($parts[1]) ? $parts[1] : '';
 
 			self::$parts = array();
 
