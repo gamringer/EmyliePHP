@@ -34,7 +34,6 @@ namespace Emylie\Core\Stack {
 					$controller = 'Error';
 					$action = '410';
 				}else{
-					//	Get PRivate key from public
 					$at = $this->_access_type;
 					$kp = $at::findOne([
 						'where' => [
@@ -46,7 +45,7 @@ namespace Emylie\Core\Stack {
 						$action = '403';
 					}else{
 						$ctx = hash_init('sha512', HASH_HMAC, $kp->private);
-						hash_update($ctx, $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+						hash_update($ctx, $_SERVER['REQUEST_URI']);
 						hash_update($ctx, $this->input);
 						$hash = hash_final($ctx);
 						if($hash != $headers['X-Digest']){
