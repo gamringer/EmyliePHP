@@ -314,6 +314,7 @@ namespace Emylie\Core\Data {
 
 		public static function findByObject($object, $options = []){
 			$model_name = substr(get_called_class(), strrpos(get_called_class(), '\\') + 1);
+			$object_model_name = substr(get_class($object), strrpos(get_class($object), '\\') + 1);
 
 			$method = 'getModels'.$model_name;
 			if(!isset($object->ID)){
@@ -327,6 +328,17 @@ namespace Emylie\Core\Data {
 				if($object::$has_many[$model_name] != static::$table_name){
 					$options['joins'] = array(
 						$object::$has_many[$model_name] => static::$id_field
+					);
+				}
+
+				return static::findAll($options);
+			}elseif(isset(static::$has_many[$object_model_name])){
+
+				$options['where'][] = static::$has_many[$object_model_name].'.'.$object::$id_field.' = '.$object->ID;
+
+				if(static::$has_many[$object_model_name] != static::$table_name){
+					$options['joins'] = array(
+						static::$has_many[$object_model_name] => static::$id_field
 					);
 				}
 
@@ -351,6 +363,16 @@ namespace Emylie\Core\Data {
 			}
 
 			return null;
+		}
+
+		public static function findFromSet(Array $set){
+
+			$ids = [];
+			foreach($set as $item){
+				$ids[] = $item->info[static::$id_field];
+			}
+
+			return static::findMany($ids);
 		}
 
 		public function removeCache(){
