@@ -38,5 +38,32 @@ namespace Emylie\Content {
 			fclose($fs);
 		}
 
+		static public function relativeFromAbsolute($to, $from = null){
+			if($from == null){
+				$from = getcwd();
+			}
+
+			$tparts = explode('/', substr($to, 1));
+			$fparts = explode('/', substr($from, 1));
+
+			$separated = false;
+			$result = '.';
+			while($fpart = array_shift($fparts)){
+				$tpart = array_shift($tparts);
+				if($separated || $fpart != $tpart){
+					$separated = true;
+					$result = '../'.$result;
+					if($tpart != null){
+						$result .= '/'.$tpart;
+					}
+				}
+			}
+			if(isset($tparts[0])){
+				$result .= '/'.implode('/', $tparts);
+			}
+
+			return preg_replace('/(^|\/)\.(\/|$)/', '', $result);
+		}
+
 	}
 }
