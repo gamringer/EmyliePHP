@@ -117,7 +117,7 @@ namespace Emylie\ACL {
 			return $permissions;
 		}
 
-		public function getRoleIdByCode($code) {
+		public static function getRoleIdByCode($code) {
 			$oldTableName = Role::$table_name;
 			Role::$table_name = Config::$config['ACL'][static::$table_name]['table_prefix'] . Role::$table_name;
 
