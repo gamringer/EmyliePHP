@@ -85,8 +85,15 @@ namespace Emylie\Core\Data {
 
 			$owner = $this->owner;
 			foreach($this->added as $added){
-				$added->{$owner::$id_field} = $owner->ID;
-				$added->save();
+				if(in_array($owner::$id_field, $added::$fields)){
+					$added->{$owner::$id_field} = $owner->ID;
+					$added->save();
+				}elseif(isset($owner::$has_many[$this->type])){
+					$owner::getDB()->insert($owner::$has_many[$this->type], [
+						$owner::$id_field => $owner->ID,
+						$added::$id_field => $added->ID,
+					]);
+				}
 			}
 			$this->added = [];
 
