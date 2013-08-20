@@ -32,7 +32,7 @@ namespace Emylie\Content {
 				$animatedGifAddon = ' -coalesce';
 			}
 
-			$cmd = 'convert '.$pathFrom.$animatedGifAddon.' -scale '.$width.'x'.$height.$scaleMod.' '.$pathTo;
+			$cmd = 'convert '.$pathFrom.$animatedGifAddon.' -scale '.$width.'x'.$height.$scaleMod.' -strip '.$pathTo;
 			$result = shell_exec($cmd);
 
 			return true;
