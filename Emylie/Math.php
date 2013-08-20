@@ -6,8 +6,11 @@ namespace Emylie {
 
 		public static function unit($amount, $unit, $decimals = 2, $binary = true, $separator = ' ', $minPower = 0){
 
+			$positive = $amount >= 0;
 			if ($amount == 0) {
 				return round($amount, $decimals);
+			}elseif ($amount < 0) {
+				$amount = abs($amount);
 			}
 
 			if ($binary) {
@@ -23,6 +26,8 @@ namespace Emylie {
 				$amount *= pow(10, 3 * $prefixIndex);
 				$prefixes = ['','m','µ','n','p','f','a','z','y'];
 			}
+
+			$amount *= $positive ? 1 : -1;
 
 			return number_format($amount, $decimals) . $separator . $prefixes[$prefixIndex] . $unit;
 		}
@@ -47,10 +52,10 @@ namespace Emylie {
 			}
 
 			if($locale == 'fr_CA'){
-				return number_format($amount, 2, ' ', ',').$symbol.($showIso == null ? '' : $showIso);
+				return number_format($amount, 2, ',', ' ').$symbol.($showIso == null ? '' : $showIso);
 
 			}elseif($locale == 'en_US'){
-				return ($amount < 0 ? '-' : '').$symbol.number_format(abs($amount), 2, ',', '.').($showIso == null ? '' : ' '.$showIso);
+				return ($amount < 0 ? '-' : '').$symbol.number_format(abs($amount), 2, '.', ',').($showIso == null ? '' : ' '.$showIso);
 
 			}
 		}
