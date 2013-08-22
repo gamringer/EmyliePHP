@@ -4,14 +4,16 @@ namespace Emylie\Core {
 
 	class URIExtractor{
 
-		static $parts = array();
-		static $vars = array();
+		static $parts = [];
+		static $vars = [];
 
 		public function __construct(){
 
 		}
 
 		public static function analyze($uri = null){
+			self::$parts = [];
+			self::$vars = [];
 			if(is_null($uri)){
 				$uri = $_SERVER['REQUEST_URI'];
 			}
