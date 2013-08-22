@@ -43,7 +43,7 @@ namespace Emylie\Core\Stack {
 
 			$this->_route = $this->protectRoute($this->_router->route($command));
 
-			$stack = new Stack($this->_route['controller'], $this->_route['action']);
+			$stack = new Stack($this->_route['controller'], strtolower($_SERVER['REQUEST_METHOD']).'_'.$this->_route['action']);
 			if($stack->getStatus() != 200){
 				if($stack->getStatus() == 404){
 					$stack = new Stack('Error', '404');
