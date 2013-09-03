@@ -12,7 +12,7 @@ namespace Emylie\Exec{
 
 			//	If hasn't yet forked, set signal listener
 			if(!self::$forked){
-				self::_prepareFirstFork();
+				//self::_prepareFirstFork();
 			}
 
 			//	Set Variables for new process
@@ -43,6 +43,16 @@ namespace Emylie\Exec{
 			while(!empty(self::$_runningChildren)){
 				pcntl_signal_dispatch();
 			}
+		}
+
+		public static function checkRelease(){
+			if(!empty(self::$_runningChildren)){
+				pcntl_signal_dispatch();
+			}
+		}
+
+		public static function getPID(){
+			return getmypid();
 		}
 
 	}

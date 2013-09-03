@@ -17,7 +17,7 @@ namespace Emylie\Exec{
 		private $_running = false;
 
 		public function __construct(){
-			$this->_resultFile = File::open($this->_getResultsPath().DIRECTORY_SEPARATOR.$this->_pid.'.erf');
+			//$this->_resultFile = File::open($this->_getResultsPath().DIRECTORY_SEPARATOR.$this->_pid.'.erf');
 		}
 
 		public function run(Callable $command){
@@ -25,16 +25,17 @@ namespace Emylie\Exec{
 				$this->_running = true;
 			}
 
-			$this->_command = $command;
-
+			$this->_command = $command->bindTo($this);
 			$this->_ppid = getmypid();
 			$pid = pcntl_fork();
 			if($pid == 0){
 
+
 				$this->_pid = getmypid();
 
 				$command = $this->_command;
-				$this->_setResult($command());
+				$result = $command();
+//				$this->_setResult($command());
 				exit();
 			}
 			$this->_pid = $pid;
