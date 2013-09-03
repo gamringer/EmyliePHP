@@ -3,6 +3,7 @@
 namespace Emylie\Core\Stack {
 
 	use \Emylie\Core\URIExtractor;
+	use \Emylie\Core\Config;
 
 	class Application{
 
@@ -59,7 +60,7 @@ namespace Emylie\Core\Stack {
 			return isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? 'https' : 'http';
 		}
 
-		public final function execute($command){
+		public function execute($command){
 
 			if($this->_secure && (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on')){
 				header('Location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
