@@ -105,10 +105,13 @@ namespace Emylie\Core\Stack {
 			}
 
 			$stack = new Stack($controller, $action);
-
 			if($stack->getStatus() != 200){
 				if($stack->getStatus() == 404){
 					$stack = new Stack('Error', '404');
+				}
+
+				if($stack->getStatus() == 404){
+					trigger_error('Empty Stack and no Error::404 controller action defined');
 				}
 			}
 
@@ -117,16 +120,18 @@ namespace Emylie\Core\Stack {
 
 		protected function _parseCommand($command){
 
-			$first = URIExtractor::getPart(0, $this->_default_controller);
+			$parts = explode('/', trim($command, '/'));
 
-			if(isset($this->_default_controllers[$first])){
-				$controller = $this->_default_controllers[$first];
-				$action = $first;
-			}elseif(isset(URIExtractor::$parts[1])){
-				$controller = $first;
-				$action = URIExtractor::$parts[1];
+			if(!isset($parts[0][0])){
+				$parts[0] = $this->_default_controller;
+				$parts[] = 'default';
+			}
+
+			if(isset($parts[1])){
+				$controller = $parts[0];
+				$action = $parts[1];
 			}else{
-				$controller = $first;
+				$controller = $parts[0];
 				$action = 'default';
 			}
 

@@ -43,7 +43,6 @@ namespace Emylie\Core\Stack {
 		}
 
 		public function _getController($type){
-
 			$this->_controller_type = $type;
 			if(is_file(APP_CTRL_DIR.$this->_controller_type.'Controller.php')){
 				$this->_controller_name = 'Apps\\'.APP.'\\controllers\\'.$this->_controller_type.'Controller';

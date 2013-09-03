@@ -36,14 +36,14 @@ namespace Emylie\Core\Stack {
 
 		public final function execute($command){
 
-			if($this->_secure && (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on')){
+			if(!DEV && $this->_secure && (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on')){
 				header('HTTP/1.1 403 Forbidden', 403);
 				exit;
 			}
 
 			$this->_route = $this->protectRoute($this->_router->route($command));
 
-			$stack = new Stack($this->_route['controller'], strtolower($_SERVER['REQUEST_METHOD']).'_'.$this->_route['action']);
+			$stack = new Stack($this->_route['controller'], $this->_route['action']);
 			if($stack->getStatus() != 200){
 				if($stack->getStatus() == 404){
 					$stack = new Stack('Error', '404');
@@ -69,7 +69,6 @@ namespace Emylie\Core\Stack {
 				!in_array($route['controller'].'::*', $this->_public_actions)
 			){
 				$headers = getallheaders();
-
 				if(
 					!isset($headers['X-Timestamp'])
 				 || isset($headers['X-Timestamp'][10])
@@ -100,8 +99,12 @@ namespace Emylie\Core\Stack {
 							$route = ['controller' => 'Error', 'action' => '400'];
 						}
 						$this->_keyPair = $kp;
+
+						$route['action'] = strtolower($_SERVER['REQUEST_METHOD']).'_'.$route['action'];		
 					}
 				}
+			}else{
+				$route['action'] = strtolower($_SERVER['REQUEST_METHOD']).'_'.$route['action'];
 			}
 
 			return $route;
