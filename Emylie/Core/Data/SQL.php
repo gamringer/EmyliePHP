@@ -43,17 +43,21 @@ namespace Emylie\Core\Data {
 					$server = $server[rand(0, sizeof($server)-1)];
 				}
 				$server = explode(':', $server);
-				$this->$connection = mysqli_connect(
+				$this->$connection = mysqli_init();
+				if(!mysqli_real_connect(
+					$this->$connection,
 					$server[0],
 					$info['username'],
 					$info['password'],
 					$info['db_name'],
 					isset($server[1]) ? $server[1] : 3306
-				) or $this->error($this->$connection);
+				)){
+					$this->error($this->$connection);
+				}
 
 				mysqli_set_charset($this->$connection, $info['charset']);
 			}
-
+			
 			return $this;
 		}
 
@@ -92,15 +96,18 @@ namespace Emylie\Core\Data {
 			if($value === null){
 				return 'NULL';
 			}
+
 			$connection = null;
 			if(null !== $this->_connection_write){
-				$connection = $this->_connection_write;
+				$connection = $this->getConnection('write');
+
 			}elseif(null !== $this->_connection_read){
-				$connection = $this->_connection_read;
+				$connection = $this->getConnection('read');
+
 			}else{
-				$this->connect('read');
-				$connection = $this->_connection_read;
+				$connection = $this->getConnection('read');
 			}
+
 			$q = '';
 			if($quotes){
 				$q = '"';
@@ -230,7 +237,7 @@ namespace Emylie\Core\Data {
 			return null;
 		}
 
-		public function insert($table_name, $item, $ignore = true){
+		public function insert($table_name, $item, $ignore = true, $updates = []){
 
 			$keys = [];
 			$values = [];
@@ -239,7 +246,14 @@ namespace Emylie\Core\Data {
 				$values[] = $value;
 			}
 
-			$sql = 'INSERT '.($ignore ? 'IGNORE ' : '').'INTO '.$table_name.' (`'.implode('`,`', $keys).'`) VALUES ('.implode(',', $values).');SELECT LAST_INSERT_ID() AS id;';
+			$updateStatements = [];
+			if(!$ignore){
+				foreach($updates as $field => $value){
+					$updateStatements[] = $field.'='.$value;
+				}
+			}
+
+			$sql = 'INSERT '.($ignore ? 'IGNORE ' : '').'INTO '.$table_name.' (`'.implode('`,`', $keys).'`) VALUES ('.implode(',', $values).')'.(!empty($updateStatements) ? ' ON DUPLICATE KEY UPDATE '.implode(',', $updateStatements) : '').';SELECT LAST_INSERT_ID() AS id;';
 
 			return $this->write($sql)['id'];
 		}
@@ -289,12 +303,14 @@ namespace Emylie\Core\Data {
 
 		public function close($mode = null){
 
-			if($mode == null || $mode == 'read'){
+			if(($mode == null || $mode == 'read') && $this->_connection_read != null){
 				mysqli_close($this->_connection_read);
+				$this->_connection_read = null;
 			}
 
-			if($mode == null || $mode == 'write'){
+			if(($mode == null || $mode == 'write') && $this->_connection_write != null){
 				mysqli_close($this->_connection_write);
+				$this->_connection_write = null;
 			}
 
 		}
