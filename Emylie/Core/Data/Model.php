@@ -81,7 +81,7 @@ namespace Emylie\Core\Data {
 			static::$_instances[$this->ID] = $this;
 		}
 
-		public function update(){
+		public function update($fields = null){
 
 			//	Update DB
 			if(in_array('date_updated', static::$fields)){
@@ -89,11 +89,18 @@ namespace Emylie\Core\Data {
 			}
 
 			$statements['table_name'] = static::$table_name;
-			$statements['where'] = array(static::$id_field.' = "'.$this->ID.'"');
-			$statements['set'] = array();
+			$statements['where'] = [static::$id_field.' = "'.$this->ID.'"'];
+			$statements['set'] = [];
 
 			foreach($this->info as $index => $value){
-				if(in_array($index, static::$fields) && !in_array($index, static::$lockedFields)){
+				if(
+					in_array($index, static::$fields)
+				 && !in_array($index, static::$lockedFields)
+				 && (
+				 		$fields == null
+				 	 || in_array($index, $fields)
+				 	)
+				){
 					$statements['set'][] = $index.' = '.SQL::db(static::$i_name)->escape($value);
 				}
 			}
