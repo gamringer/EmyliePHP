@@ -60,6 +60,18 @@ namespace Emylie {
 			}
 		}
 
+		public static function packU64($value){
+			
+			return pack('N*', $value>>32, $value|(-1>>32));
+		}
+
+		public static function unpackU64($value){
+			
+			$v = unpack('N*', $length);
+
+			return $v[1]<<32 | $v[2];
+		}
+
 	}
 
 }
