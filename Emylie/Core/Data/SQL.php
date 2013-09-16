@@ -57,7 +57,7 @@ namespace Emylie\Core\Data {
 
 				mysqli_set_charset($this->$connection, $info['charset']);
 			}
-			
+
 			return $this;
 		}
 
@@ -298,7 +298,7 @@ namespace Emylie\Core\Data {
 				$msg = mysqli_error($connection);
 			}
 
-			trigger_error($msg . ' |===| ' . $sql, E_USER_WARNING);
+			trigger_error($msg . PHP_EOL . $sql, E_USER_WARNING);
 		}
 
 		public function close($mode = null){
