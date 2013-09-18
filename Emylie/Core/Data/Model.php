@@ -374,12 +374,28 @@ namespace Emylie\Core\Data {
 
 		public static function findFromSet(Array $set){
 
-			$ids = [];
-			foreach($set as $item){
-				$ids[] = $item->info[static::$id_field];
+			if(empty($set)){
+				return [];
 			}
 
-			return static::findMany($ids);
+			$ids = [];
+			if(in_array(static::$id_field, $set[0]::$fields)){
+				foreach($set as $item){
+					$ids[] = $item->info[static::$id_field];
+				}
+
+				return static::findMany($ids);
+			}elseif(in_array($set[0]::$id_field, static::$fields)){
+				foreach($set as $item){
+					$ids[] = $item->ID;
+				}
+
+				return static::findAll([
+					'where' => [
+						$set[0]::$id_field.' IN ('.implode(',', $ids).')'
+					]
+				]);
+			}
 		}
 
 		public function removeCache(){
