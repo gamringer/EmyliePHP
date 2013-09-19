@@ -20,12 +20,15 @@ namespace Emylie\Exec{
 			//$this->_resultFile = File::open($this->_getResultsPath().DIRECTORY_SEPARATOR.$this->_pid.'.erf');
 		}
 
-		public function run(Callable $command){
+		public function run(Callable $command, $context = null){
 			if(!$this->_running){
 				$this->_running = true;
 			}
 
-			$this->_command = $command->bindTo($this);
+			if($context == null){
+				$context = $this;
+			}
+			$this->_command = $command->bindTo($context);
 			$this->_ppid = getmypid();
 			$pid = pcntl_fork();
 			if($pid == 0){
