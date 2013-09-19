@@ -40,7 +40,7 @@ namespace Emylie {
 			}
 		}
 
-		public static function fCurrency($amount, $iso, $locale = null, $showIso = null){
+		public static function fCurrency($amount, $iso, $locale = null, $showIso = false, $dec = 2){
 
 			$symbol = '';
 			if(in_array($iso, ['cad','usd','aud'])){
@@ -52,10 +52,10 @@ namespace Emylie {
 			}
 
 			if($locale == 'fr_CA'){
-				return number_format($amount, 2, ',', ' ').$symbol.($showIso == null ? '' : $showIso);
+				return number_format($amount, $dec, ',', ' ').$symbol.($showIso ? strtoupper($iso) : '');
 
 			}elseif($locale == 'en_US'){
-				return ($amount < 0 ? '-' : '').$symbol.number_format(abs($amount), 2, '.', ',').($showIso == null ? '' : ' '.$showIso);
+				return ($amount < 0 ? '-' : '').$symbol.number_format(abs($amount), $dec, '.', ',').($showIso ? strtoupper($iso) : '');
 
 			}
 		}
