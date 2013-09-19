@@ -372,7 +372,7 @@ namespace Emylie\Core\Data {
 			return null;
 		}
 
-		public static function findFromSet(Array $set){
+		public static function findFromSet(Array $set, Array $options = []){
 
 			if(empty($set)){
 				return [];
@@ -384,17 +384,19 @@ namespace Emylie\Core\Data {
 					$ids[] = $item->info[static::$id_field];
 				}
 
-				return static::findMany($ids);
+				return static::findMany($ids, $options);
 			}elseif(in_array($set[0]::$id_field, static::$fields)){
 				foreach($set as $item){
 					$ids[] = $item->ID;
 				}
 
-				return static::findAll([
+				$options = array_merge([
 					'where' => [
 						$set[0]::$id_field.' IN ('.implode(',', $ids).')'
 					]
-				]);
+				], $options);
+
+				return static::findAll($options);
 			}
 		}
 
