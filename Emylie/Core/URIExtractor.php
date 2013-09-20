@@ -6,6 +6,7 @@ namespace Emylie\Core {
 
 		static $parts = [];
 		static $vars = [];
+		static $query;
 
 		public function __construct(){
 
@@ -19,7 +20,7 @@ namespace Emylie\Core {
 			}
 			$parts = explode('?', $uri);
 			$uri = $parts[0];
-			$query = isset($parts[1]) ? $parts[1] : '';
+			self::$query = isset($parts[1]) ? $parts[1] : '';
 
 			self::$parts = array();
 
@@ -45,13 +46,10 @@ namespace Emylie\Core {
 			ksort($vars);
 
 			$url = '/';
-			$query = '';
 			foreach(self::$parts as $i => $part){
 				if(is_int($i)){
 					if($part[0] != '?'){
 						$url .= $part.'/';
-					}else{
-						$query = $part;
 					}
 				}
 			}
@@ -63,7 +61,7 @@ namespace Emylie\Core {
 			}
 
 			if($includeQuery){
-				$url .= $query;
+				$url .= '?'.self::$query;
 			}
 
 			return $url;
