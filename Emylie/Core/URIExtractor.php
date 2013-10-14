@@ -29,7 +29,7 @@ namespace Emylie\Core {
 				if(isset($part[0])){
 					$sub_parts = explode(':',$part);
 					if(isset($sub_parts[1])){
-						self::$vars[$sub_parts[0]] = $sub_parts[1];
+						self::$vars[$sub_parts[0]] = rawurldecode($sub_parts[1]);
 					}else{
 						self::$parts[] = $part;
 					}
