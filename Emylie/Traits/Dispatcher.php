@@ -4,6 +4,7 @@ namespace Emylie\Traits {
 		private $_callbacks = [];
 
 		protected function _dispatch($event){
+
 			if(!isset($this->_callbacks[$event['name']])){
 				return;
 			}
@@ -15,7 +16,14 @@ namespace Emylie\Traits {
 			}
 		}
 
-		public function listen($name, Callable $callback){
+		public function listen($name, Callable $callback, $context = null){
+
+			if($context = null){
+				$context = $this;
+			}
+
+			$callback->bindTo($context);
+
 			$this->_callbacks[$name][] = $callback;
 		}
 	}
