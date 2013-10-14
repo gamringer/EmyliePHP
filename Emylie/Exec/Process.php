@@ -6,17 +6,15 @@ namespace Emylie\Exec{
 		public static $forked = false;
 
 		private static $_runningChildren = [];
-		private static $_path = [];
 
 		public static function fork(){
 
-			//	If hasn't yet forked, set signal listener
 			if(!self::$forked){
-				//self::_prepareFirstFork();
+				self::_prepareFirstFork();
 			}
 
-			//	Set Variables for new process
 			$fork = new Fork();
+
 			$fork->listen('start', function($e) {
 				self::$_runningChildren[$e['target']->getPID()] = $e['target'];
 			});
@@ -36,12 +34,14 @@ namespace Emylie\Exec{
 
 					self::$_runningChildren[$childpid]->handleSignalStatus(pcntl_wexitstatus($status));
 				}
-			});
+			}, true);
 		}
 
 		public static function awaitRelease(){
 			while(!empty(self::$_runningChildren)){
 				pcntl_signal_dispatch();
+
+				usleep(10000);
 			}
 		}
 
@@ -49,6 +49,8 @@ namespace Emylie\Exec{
 			if(!empty(self::$_runningChildren)){
 				pcntl_signal_dispatch();
 			}
+
+			usleep(10000);
 		}
 
 		public static function getPID(){
