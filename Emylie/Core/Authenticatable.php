@@ -14,7 +14,7 @@ namespace Emylie\Core {
 			];
 
 			$user = static::findOne($options);
-
+			
 			if(
 				null != $user
 			 && Crypto::verifyPassword($password, $user->password)
@@ -42,7 +42,7 @@ namespace Emylie\Core {
 		}
 
 		public function createAccessToken($expire = 10){
-			return Crypto::encryptArray([
+			return Crypto::encryptArray(Config::$config['passphrase'], [
 				'id' => $this->ID,
 				'type' => basename(str_replace('\\', '/', get_class($this))),
 				'expire' => time() + $expire
@@ -50,7 +50,7 @@ namespace Emylie\Core {
 		}
 
 		public static function fromAccessToken($token){
-			$tokenInfo = Crypto::decryptArray($token);
+			$tokenInfo = Crypto::decryptArray(Config::$config['passphrase'], $token);
 			if(
 				time() < $tokenInfo['expire']
 			 && $tokenInfo['type'] == substr(get_called_class(), strrpos(get_called_class(), '\\') + 1)
