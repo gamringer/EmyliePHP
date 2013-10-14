@@ -4,31 +4,38 @@ namespace Emylie\Core {
 
 	class Crypto{
 
-		static public function encrypt($data) {
-			$key = Config::$config['passphrase'];
-			$keymd5 = md5($key);
+		static public function encrypt($key, $data) {
 
-			$encrypted = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $keymd5, $data, MCRYPT_MODE_CBC, md5($keymd5));
+			$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, 'ctr');
+    		$iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM);
 
-			return base64_encode($encrypted);
+			$ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $data, 'ctr', $iv);
+
+			return base64_encode($iv.$ciphertext);
 		}
 
-		static public function decrypt($data) {
-			$key = Config::$config['passphrase'];
-			$keymd5 = md5($key);
+		static public function decrypt($key, $data) {
+			$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, 'ctr');
 
-			$encrypted = base64_decode($data);
-			$decrypted = mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $keymd5, $encrypted, MCRYPT_MODE_CBC, md5($keymd5));
+			$data = base64_decode($data);
+			$iv = substr($data, 0, $iv_size);
+			$ciphertext = substr($data, $iv_size);
 
-			return rtrim($decrypted, "\0");
+			if(!isset($iv[$iv_size-1])){
+				return null;
+			}
+
+			$plaintext = mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, $ciphertext, 'ctr', $iv);
+
+			return $plaintext;
 		}
 
-		static public function encryptArray($data) {
-			return static::encrypt(json_encode($data));
+		static public function encryptArray($key, $data) {
+			return static::encrypt($key, json_encode($data));
 		}
 
-		static public function decryptArray($data) {
-			return json_decode(static::decrypt($data), true);
+		static public function decryptArray($key, $data) {
+			return json_decode(static::decrypt($key, $data), true);
 		}
 
 		static public function cryptPassword($password, $cost = 14){
@@ -39,11 +46,11 @@ namespace Emylie\Core {
 				$cost = 31;
 			}
 
-			$chars = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 			$salt = '$2y$'.sprintf('%02s', $cost).'$';
-			for($i=0; $i<22; $i++){
-				$salt .= $chars[rand(0,63)];
-			}
+			
+			$fs = fopen('/dev/urandom', 'r');
+			$salt .= bin2hex(fread($fs, 11));
+			fclose($fs);
 
 			return crypt($password, $salt);
 		}
