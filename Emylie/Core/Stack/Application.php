@@ -69,6 +69,11 @@ namespace Emylie\Core\Stack {
 
 			list($controller, $action) = $this->_parseCommand($command);
 
+			if(isset($this->_default_controllers[$controller])){
+				$action = $controller;
+				$controller = $this->_default_controllers[$controller];
+			}
+
 			$stack = $this->_getStack($controller, $action);
 
 			return $this->_process($stack);
@@ -122,16 +127,14 @@ namespace Emylie\Core\Stack {
 
 			$parts = explode('/', trim($command, '/'));
 
-			if(!isset($parts[0][0])){
-				$parts[0] = $this->_default_controller;
-				$parts[] = 'default';
-			}
-
-			if(isset($parts[1])){
+			if(isset($parts[1]) && strpos($parts[1], ':') == false){
 				$controller = $parts[0];
 				$action = $parts[1];
-			}else{
+			}elseif(isset($parts[0][0]) && strpos($parts[0], ':') == false){
 				$controller = $parts[0];
+				$action = 'default';
+			}else{
+				$controller = $this->_default_controller;
 				$action = 'default';
 			}
 
