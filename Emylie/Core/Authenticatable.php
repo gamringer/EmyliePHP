@@ -35,9 +35,6 @@ namespace Emylie\Core {
 			//	Encrypt new password
 			$this->password = Crypto::cryptPassword($password);
 
-			//	Clear Cache
-			$this->removeCache();
-
 			return $this;
 		}
 
