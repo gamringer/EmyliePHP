@@ -15,15 +15,16 @@ namespace Emylie\IO\Websocket {
 		const PEER_HANDLER_PCNTL = 2;
 		const PEER_HANDLER_PTHREAD = 3;
 
-		private $_ip;
-		private $_port;
+		private $_address;
 		private $_handler;
 
-		public function __construct($address, $handler = null){
-			list($this->_ip, $this->_port) = explode(':', $address);
+		public function __construct($address, $certificate, $handler = null){
+			$this->_address = $address;
 
-			if($handler == null){
-
+			$this->_context = stream_context_create();
+			if(substr($address, 0, 3) == 'ssl'){
+				stream_context_set_option($this->_context, 'ssl', 'local_cert', '/home/wilhelm/clicko.com.pem');
+				stream_context_set_option($this->_context, 'ssl', 'verify_peer', false);
 			}
 		}
 
@@ -31,41 +32,35 @@ namespace Emylie\IO\Websocket {
 			$peers = [];
 
 			// socket creation
-			$master = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-			socket_set_option($master, SOL_SOCKET, SO_REUSEADDR, true);
-
-			if(!is_resource($master)){exit;}
-			if(!socket_bind($master, $this->_ip, $this->_port)){exit;}
-			if(!socket_listen($master)){exit;}
+			$master = stream_socket_server($this->_address, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $this->_context);
 
 			$sockets = [$master];
-
 			while(true){
 				$read = $sockets;
 				$write = [];
 				$except = [];
 
-				$evc = socket_select($read, $write, $except, null);
-
-				foreach($read as $socket){
-					$this->_startPeer($socket);
+				if(@stream_select($read, $write, $except, 2) > 0){
+					foreach($read as $socket){
+						$this->_startPeer($socket);
+					}
 				}
+
+				Process::checkRelease();
 			}	
 		}
 
 		private function _startPeer($socket){
 			$peer = Peer::produce($socket);
-			$action = function() use($peer) {
+
+			$fork = Process::fork()->run(function() use($peer) {
 				$this->_dispatch([
 					'name' => self::EV_PEER_CONNECT,
 					'peer' => $peer
 				]);
 
 				$peer->poll();
-			};
-
-			$fork = Process::fork();
-			$fork->run($action, $this);
+			}, $this);
 		} 
 	}
 }

@@ -29,8 +29,8 @@ namespace Emylie\IO\Websocket {
 		}
 
 		static public function produce($source){
-			
-			$socket = socket_accept($source);
+
+			$socket = stream_socket_accept($source);
 			$s = intval($socket);
 			
 			static::$_instances[$s] = new static($socket);
@@ -39,8 +39,8 @@ namespace Emylie\IO\Websocket {
 		}
 
 		public function recv(){
-			socket_recv($this->socket, $header, 1, MSG_WAITALL);
-			socket_recv($this->socket, $length, 1, MSG_WAITALL);
+			$header = fread($this->socket, 1);
+			$length = fread($this->socket, 1);
 
 			if((ord($header) & 0b00001111) == 0x8){
 				$this->_dispatch([
@@ -51,22 +51,25 @@ namespace Emylie\IO\Websocket {
 
 				return null;
 			}
-
 			$length = ord($length) & 127;
 
 			if($length == 126) {
-				socket_recv($this->socket, $length, 2, MSG_WAITALL);
+				$length = fread($this->socket, 2);
 				$r = unpack('n', $length);
 				$length = $r[1];
 
 			}elseif($length == 127) {
-				socket_recv($this->socket, $length, 8, MSG_WAITALL);
+				$length = fread($this->socket, 8);
 				$v = unpack('N*', $length);
 				$length = $v[1]<<32 | $v[2];
 			}
+			
+			if($length == 0){
+				return '';
+			}
 
-			socket_recv($this->socket, $mask, 4, MSG_WAITALL);
-			socket_recv($this->socket, $data, $length, MSG_WAITALL);
+			$mask = fread($this->socket, 4);
+			$data = fread($this->socket, $length);
 
 			$text = '';
 			for ($i = 0; $i < strlen($data); ++$i) {
@@ -78,7 +81,7 @@ namespace Emylie\IO\Websocket {
 
 		public function send($data){
 
-			socket_write($this->socket, $this->_encode($data));
+			fwrite($this->socket, $this->_encode($data));
 		}
 
 		private function _encode($text, $last = true, $first = true){
@@ -119,42 +122,42 @@ namespace Emylie\IO\Websocket {
 			return $content;
 		}
 
-		private function _handshake(){
-			$bc = socket_recv($this->socket, $data, 2048, MSG_DONTWAIT);
+		protected function _handshake(){
+
+			$header = [];
+
+			$i = 0;
+			do {
+				$line = stream_get_line($this->socket, 1024, "\r\n");
+
+				if(preg_match('/GET (.*) HTTP\/([\d\.]+)/', $line, $match)){
+					$root = $match[1];
+					$httpversion = $match[2];
+				
+				}elseif(preg_match("/([\w\-]+): (.*)/i", $line, $match)){
+					$header[$match[1]] = $match[2];
+				}
+
+			} while($line != '');
 			
-			$version = 0;
-			if(preg_match("/Sec-WebSocket-Version: (.*)\r\n/", $data, $match)){
-				$version = $match[1];
-			}
-			
-			if($version != 13) {
+			if(
+				!isset($header['Sec-WebSocket-Version'])
+			 || !isset($header['Sec-WebSocket-Key'])
+			 || $header['Sec-WebSocket-Version'] != 13
+			) {
 				return false;
 			}
-
-			// Extract header variables
-			if(preg_match("/GET (.*) HTTP/", $data, $match)){
-				$root = $match[1];
-			}
-			if(preg_match("/Host: (.*)\r\n/", $data, $match)){
-				$host = $match[1];
-			}
-			if(preg_match("/Origin: (.*)\r\n/", $data, $match)){
-				$origin = $match[1];
-			}
-			if(preg_match("/Sec-WebSocket-Key: (.*)\r\n/", $data, $match)){
-				$key = $match[1];
-			}
 			
-			$acceptKeyBase = $key.'258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+			$acceptKeyBase = $header['Sec-WebSocket-Key'].'258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 			$acceptKey = base64_encode(sha1($acceptKeyBase, true));
 
 			$upgrade = "HTTP/1.1 101 Switching Protocols\r\n".
 					   "Upgrade: websocket\r\n".
 					   "Connection: Upgrade\r\n".
-					   "Sec-WebSocket-Accept: $acceptKey".
-					   "\r\n\r\n";
+					   "Sec-WebSocket-Accept: ".$acceptKey."\r\n".
+					   "\r\n";
 			
-			socket_write($this->socket, $upgrade);
+			fwrite($this->socket, $upgrade);
 
 			return true;
 		}
@@ -165,19 +168,20 @@ namespace Emylie\IO\Websocket {
 				$write = [];
 				$except = [];
 
-				$evc = socket_select($read, $write, $except, null);
-
-				foreach($read as $socket){
-					$content = $this->recv();
-						
-					if($content == null){
-						break;
+				if(stream_select($read, $write, $except, 1) > 0){
+					foreach($read as $socket){
+						$content = $this->recv();
+							
+						if($content == null){
+							break;
+						}
+						$this->_dispatch([
+							'name' => self::EV_MESSAGE,
+							'message' => $content
+						]);
 					}
-					$this->_dispatch([
-						'name' => self::EV_MESSAGE,
-						'message' => $content
-					]);
 				}
+
 			}
 		}
 
