@@ -49,8 +49,6 @@ namespace Emylie\Exec{
 			if(!empty(self::$_runningChildren)){
 				pcntl_signal_dispatch();
 			}
-
-			usleep(10000);
 		}
 
 		public static function getPID(){
