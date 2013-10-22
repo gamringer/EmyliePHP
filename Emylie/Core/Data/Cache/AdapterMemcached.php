@@ -9,7 +9,7 @@ namespace Emylie\Core\Data\Cache {
 
 		private $_cache_life;
 		private $_prefix;
-		private $_emabled;
+		private $_enabled;
 
 		public function __construct($i_name){
 			$this->_name = $i_name;
