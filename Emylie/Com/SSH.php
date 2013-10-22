@@ -29,6 +29,8 @@ namespace Emylie\Com{
 		private $_port;
 		private $_username;
 		private $_password;
+		private $_private;
+		private $_public;
 
 		public static function get($instance = '_default'){
 			if (!isset(self::$_instances[$instance])) {
@@ -53,6 +55,8 @@ namespace Emylie\Com{
 			if (null !== $username && null !== $password) {
 				$this->login($username, $password);
 			}
+
+			return $this;
 		}
 
 		public function login($username, $password){
@@ -65,6 +69,39 @@ namespace Emylie\Com{
 			$this->_password = $password;
 
 			ssh2_auth_password($this->_connection, $username, $password);
+			$this->_shell = ssh2_shell($this->_connection);
+
+			$data = array();
+			$endReached = false;
+			$i=0;
+			while (!$endReached) {
+				$line = fgets($this->_shell);
+				if($line != false){
+					if(preg_match('/^.*(\$|\#) $/', $line)){
+						$this->fetchDir($line);
+						$endReached = true;
+					} elseif ($i++ > 0) {
+						$data[] = $line;
+					}
+				}else{
+					usleep($this->wait);
+				}
+			}
+
+			return $data;
+		}
+
+		public function keyauth($username, $public, $private){
+			if (!is_resource($this->_connection)) {
+				trigger_error('Connection to server is not established for authentication', E_USER_WARNING);
+				return;
+			}
+
+			$this->_username = $username;
+			$this->_public = $public;
+			$this->_private = $private;
+
+			ssh2_auth_pubkey_file($this->_connection, $username, $public, $private);
 			$this->_shell = ssh2_shell($this->_connection);
 
 			$data = array();
@@ -137,7 +174,7 @@ namespace Emylie\Com{
 				return;
 			}
 
-			ssh2_scp_send($this->_getFileConnection(), $local, $remote, $mode);
+			ssh2_scp_send($this->_getFileConnection(), $local, $remote, 0755);
 		}
 
 		public function download($remote, $local){
@@ -146,14 +183,19 @@ namespace Emylie\Com{
 				return;
 			}
 
-			ssh2_scp_recv($this->_getFileConnection(), $remote, $local);
+			ssh2_scp_send($this->_getFileConnection(), $remote, $local);
 		}
 
 		private function _getFileConnection(){
 			if(null === $this->_fileConnection){
 				$this->_fileConnection = ssh2_connect($this->_server, $this->_port);
-				ssh2_auth_password($this->_fileConnection, $this->_username, $this->_password);
+				if(isset($this->_password)){
+					$r =ssh2_auth_password($this->_fileConnection, $this->_username, $this->_password);
+				}elseif(isset($this->_private)){
+					$r = ssh2_auth_pubkey_file($this->_fileConnection, $this->_username, $this->_public, $this->_private);
+				}
 			}
+
 
 			return $this->_fileConnection;
 		}
