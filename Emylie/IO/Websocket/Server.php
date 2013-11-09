@@ -17,50 +17,64 @@ namespace Emylie\IO\Websocket {
 
 		private $_address;
 		private $_handler;
+		private $_evBase;
+		private $_event;
+		private $_master;
 
-		public function __construct($address, $certificate, $handler = null){
+		public function __construct($address, $certificate = null, $handler = null){
 			$this->_address = $address;
 
 			$this->_context = stream_context_create();
 			if(substr($address, 0, 3) == 'ssl'){
-				stream_context_set_option($this->_context, 'ssl', 'local_cert', '/home/wilhelm/clicko.com.pem');
+				stream_context_set_option($this->_context, 'ssl', 'local_cert', $certificate);
 				stream_context_set_option($this->_context, 'ssl', 'verify_peer', false);
 			}
 		}
 
 		public function start(){
-			$peers = [];
+			
+			$this->_master = stream_socket_server($this->_address, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $this->_context);
 
-			// socket creation
-			$master = stream_socket_server($this->_address, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $this->_context);
+			$this->_evBase = new \EventBase();
 
-			$sockets = [$master];
-			while(true){
-				$read = $sockets;
-				$write = [];
-				$except = [];
+			$this->_event = new \Event($this->_evBase, $this->_master, \Event::READ | \Event::PERSIST, $this->_handleConnect(), $this->_master);
+			$this->_event->add();
 
-				if(@stream_select($read, $write, $except, 2) > 0){
-					foreach($read as $socket){
-						$this->_startPeer($socket);
-					}
-				}
-
-				Process::checkRelease();
-			}	
+			$this->_evBase->loop();
 		}
 
-		private function _startPeer($socket){
-			$peer = Peer::produce($socket);
+		public function getSocket(){
+			return $this->_master;
+		}
 
-			$fork = Process::fork()->run(function() use($peer) {
-				$this->_dispatch([
-					'name' => self::EV_PEER_CONNECT,
-					'peer' => $peer
-				]);
+		public function getEvBase(){
+			return $this->_evBase;
+		}
 
-				$peer->poll();
-			}, $this);
-		} 
-	}
+		private function _handleConnect(){
+			$f = function($master){
+				$peer = Peer::produce($this);
+
+				$pid = pcntl_fork();
+				if($pid == 0){
+					$this->_handlePeer($peer);
+				}
+			};
+
+			return $f->bindTo($this);
+		}
+
+		private function _handlePeer($peer){
+
+			$this->_evBase->reInit();
+			$this->_event->free();
+
+			$this->_dispatch([
+				'name' => self::EV_PEER_CONNECT,
+				'peer' => $peer
+			]);
+
+			$peer->start();
+		}
+	}	
 }

@@ -12,10 +12,13 @@ namespace Emylie\IO\Websocket {
 		public $socket;
 
 		private $_connected = true;
+		private $_server;
+		private $_event;
 		
 		static protected $_instances = [];
 
-		public function __construct($socket){
+		public function __construct($server, $socket){
+			$this->_server = $server;
 			$this->socket = $socket;
 
 			$this->_handshake();
@@ -28,29 +31,19 @@ namespace Emylie\IO\Websocket {
 			return isset(static::$_instances[$s]) ? static::$_instances[$s] : null;
 		}
 
-		static public function produce($source){
+		static public function produce($server){
 
-			$socket = stream_socket_accept($source);
+			$socket = stream_socket_accept($server->getSocket());
 			$s = intval($socket);
 			
-			static::$_instances[$s] = new static($socket);
+			static::$_instances[$s] = new static($server, $socket);
 
 			return static::$_instances[$s];
 		}
 
 		public function recv(){
-			$header = fread($this->socket, 1);
 			$length = fread($this->socket, 1);
 
-			if((ord($header) & 0b00001111) == 0x8){
-				$this->_dispatch([
-					'name' => self::EV_DISCONNECT
-				]);
-
-				$this->_connected = false;
-
-				return null;
-			}
 			$length = ord($length) & 127;
 
 			if($length == 126) {
@@ -162,27 +155,47 @@ namespace Emylie\IO\Websocket {
 			return true;
 		}
 
-		public function poll(){
-			while($this->_connected){
-				$read = [$this->socket];
-				$write = [];
-				$except = [];
+		private function _handleMessage(){
+			$f = function($socket){
 
-				if(stream_select($read, $write, $except, 1) > 0){
-					foreach($read as $socket){
-						$content = $this->recv();
-							
-						if($content == null){
-							break;
-						}
-						$this->_dispatch([
-							'name' => self::EV_MESSAGE,
-							'message' => $content
-						]);
+				while(true){
+					stream_set_blocking($this->socket, false);
+					$header = fread($this->socket, 1);
+
+					if(!isset($header[0])){
+						break;
 					}
-				}
 
-			}
+					if((ord($header) & 0b00001111) == 0x8){
+						$this->_dispatch([
+							'name' => self::EV_DISCONNECT
+						]);
+
+						$this->_connected = false;
+
+						$this->_event->free();
+						$this->_server->getEvBase()->stop();
+
+						return;
+					}
+
+					stream_set_blocking($this->socket, true);
+					$content = $this->recv();
+					
+					$this->_dispatch([
+						'name' => self::EV_MESSAGE,
+						'message' => $content
+					]);
+				}
+				
+			};
+
+			return $f->bindTo($this);
+		}
+
+		public function start(){
+			$this->_event = new \Event($this->_server->getEvBase(), $this->socket, \Event::READ | \Event::PERSIST, $this->_handleMessage(), $this->socket);
+			$this->_event->add();
 		}
 
 	}
