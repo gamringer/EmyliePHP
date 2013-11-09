@@ -19,7 +19,7 @@ namespace Emylie\Core\Data {
 				foreach($owner::$registreable_extensions[$type] as $field){
 					$info[0][$field] = null;
 				}
-			}else{
+			}elseif(isset($this->info[$owner::$id_field])){
 				$this->ID = $this->info[$owner::$id_field];
 			}
 
@@ -80,22 +80,28 @@ namespace Emylie\Core\Data {
 
 		public static function findFor($item, $type){
 			if(isset($item::$registreable_extensions[$type])){
-				$info = SQL::db($item::$i_name)->select(array(
-					'fields' => $item::$registreable_extensions[$type],
-					'from' => array($item::$table_name.'_'.$type),
-					'where' => array(
-						$item::$id_field.' = '.$item->ID
-					),
-					'limit' => 1
-				));
 
-				if(!isset($info[0])){
-					$info[0] = [];
+				if(!isset($itemthis->ID) || (int) $item->ID == 0){
+					$info = [];
+
+				}else{
+					$info = SQL::db($item::$i_name)->selectOne(array(
+						'fields' => $item::$registreable_extensions[$type],
+						'from' => array($item::$table_name.'_'.$type),
+						'where' => array(
+							$item::$id_field.' = '.$item->ID
+						),
+						'limit' => 1
+					));
+
+					if($info == null){
+						$info = [];
+					}
+
+					$info[$item::$id_field] = $item->ID;
 				}
 
-				$info[0][$item::$id_field] = $item->ID;
-
-				$result = new static($info[0], $item, $type);
+				$result = new static($info, $item, $type);
 			} else {
 				$result = null;
 			}
