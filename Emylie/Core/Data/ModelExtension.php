@@ -43,7 +43,9 @@ namespace Emylie\Core\Data {
 				}
 			}
 
-			$this->ID = SQL::db($owner::$i_name)->insert($owner::$table_name.'_'.$this->type, $fields);
+			if(!empty($fields)){
+				$this->ID = SQL::db($owner::$i_name)->insert($owner::$table_name.'_'.$this->type, $fields);
+			}
 
 			$this->info[$owner::$id_field] = $this->ID;
 		}
