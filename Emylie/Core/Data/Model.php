@@ -467,7 +467,7 @@ namespace Emylie\Core\Data {
 			$options['fields'] = array('COUNT(1) AS `count`');
 			$options['from'] = array(static::$table_name);
 
-			$db_result = SQL::db('main')->select($options);
+			$db_result = static::getDB()->select($options);
 			if($db_result != null){
 				return $db_result[0]['count'];
 			}
