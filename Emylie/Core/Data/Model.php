@@ -61,7 +61,7 @@ namespace Emylie\Core\Data {
 			}
 		}
 
-		public function create(){
+		public function create($returnExisting = false){
 
 			if(in_array('date_added', static::$fields) && !isset($this->info['date_added'])){
 				$this->info['date_added'] = time();
@@ -74,7 +74,12 @@ namespace Emylie\Core\Data {
 				}
 			}
 
-			$this->ID = SQL::db(static::$i_name)->insert(static::$table_name, $data);
+			$itemUpdates = [];
+			if($returnExisting){
+				$itemUpdates[static::$id_field] = 'LAST_INSERT_ID('.static::$id_field.')';
+			}
+
+			$this->ID = SQL::db(static::$i_name)->insert(static::$table_name, $data, empty($itemUpdates), $itemUpdates);
 
 			$this->info[static::$id_field] = $this->ID;
 
