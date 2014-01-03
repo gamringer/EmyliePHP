@@ -20,27 +20,37 @@ namespace Emylie\IO\Websocket {
 		private $_evBase;
 		private $_event;
 		private $_master;
+		private $_certificate;
 
-		public function __construct($address, $certificate = null, $handler = null){
+		public function __construct($address, $certificate = null, $passphrase = null){
 			$this->_address = $address;
 
 			$this->_context = stream_context_create();
-			if(substr($address, 0, 3) == 'ssl'){
+			if($certificate != null){
+				$this->_certificate = $certificate;
 				stream_context_set_option($this->_context, 'ssl', 'local_cert', $certificate);
 				stream_context_set_option($this->_context, 'ssl', 'verify_peer', false);
+				if($passphrase != null){
+					stream_context_set_option($this->_context, 'ssl', 'passphrase', $passphrase);
+				}
 			}
 		}
 
-		public function start(){
+		public function start(\EventBase $base = null, $loop = true){
 			
-			$this->_master = stream_socket_server($this->_address, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $this->_context);
+			if($base == null){
+				$base = new \EventBase();
+			}
+			$this->_evBase = $base;
 
-			$this->_evBase = new \EventBase();
+			$this->_master = stream_socket_server($this->_address, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $this->_context);
 
 			$this->_event = new \Event($this->_evBase, $this->_master, \Event::READ | \Event::PERSIST, $this->_handleConnect(), $this->_master);
 			$this->_event->add();
 
-			$this->_evBase->loop();
+			if($loop){
+				$this->_evBase->loop();
+			}
 		}
 
 		public function getSocket(){
@@ -55,16 +65,22 @@ namespace Emylie\IO\Websocket {
 			$f = function($master){
 				$peer = Peer::produce($this);
 
+				pcntl_signal(SIGCHLD, SIG_IGN);
 				$pid = pcntl_fork();
 				if($pid == 0){
 					$this->_handlePeer($peer);
 				}
+
 			};
 
 			return $f->bindTo($this);
 		}
 
 		private function _handlePeer($peer){
+
+			if(isset($this->_certificate)){
+				$peer->enableCrypto(STREAM_CRYPTO_METHOD_TLS_SERVER);
+			}
 
 			$this->_evBase->reInit();
 			$this->_event->free();
