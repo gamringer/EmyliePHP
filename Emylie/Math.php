@@ -4,7 +4,7 @@ namespace Emylie {
 
 	class Math {
 
-		public static function unit($amount, $unit, $decimals = 2, $binary = true, $separator = ' ', $minPower = 0){
+		public static function unit($amount, $unit, $decimals = 2, $binary = true, $separator = ' ', $minPower = 0, $zeropad = true){
 
 			$positive = $amount >= 0;
 			if ($amount == 0) {
@@ -29,7 +29,13 @@ namespace Emylie {
 
 			$amount *= $positive ? 1 : -1;
 
-			return number_format($amount, $decimals) . $separator . $prefixes[$prefixIndex] . $unit;
+			$result = number_format($amount, $decimals) . $separator . $prefixes[$prefixIndex] . $unit;
+
+			if(!$zeropad){
+				$result = trim($result, '0,. ');
+			}
+
+			return $result;
 		}
 
 		public static function compound($amount, $usury, $duration, $rate = 0){
