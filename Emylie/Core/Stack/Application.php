@@ -60,7 +60,7 @@ namespace Emylie\Core\Stack {
 			return isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? 'https' : 'http';
 		}
 
-		public function execute($command){
+		public function execute($command, $data = []){
 
 			if($this->_secure && (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on')){
 				header('Location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
@@ -75,6 +75,9 @@ namespace Emylie\Core\Stack {
 			}
 
 			$stack = $this->_getStack($controller, $action);
+
+
+			$stack->data = array_merge($stack->data, $data);
 
 			return $this->_process($stack);
 		}
