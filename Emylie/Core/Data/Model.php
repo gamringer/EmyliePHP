@@ -61,6 +61,10 @@ namespace Emylie\Core\Data {
 			}
 		}
 
+		public static function produce($info = null){
+			return new static($info);
+		}
+
 		public function create($returnExisting = false){
 
 			if(in_array('date_added', static::$fields) && !isset($this->info['date_added'])){
@@ -209,7 +213,7 @@ namespace Emylie\Core\Data {
 				$db_ids = array();
 				foreach($cache_ids as $id){
 					if($cache_result[Config::$config['cache']['main']['prefix'].'model:'.static::$table_name.':'.$id] !== Cache::NOT_CACHED){
-						static::$_instances[$id] = new static($cache_result[Config::$config['cache']['main']['prefix'].'model:'.static::$table_name.':'.$id]);
+						static::$_instances[$id] = static::produce($cache_result[Config::$config['cache']['main']['prefix'].'model:'.static::$table_name.':'.$id]);
 					} else {
 						$db_ids[] = $id;
 					}
@@ -235,7 +239,7 @@ namespace Emylie\Core\Data {
 				$items = array();
 				foreach($db_result as $item){
 					$items[Config::$config['cache']['main']['prefix'].'model:'.static::$table_name.':'.$item[static::$id_field]] = $item;
-					static::$_instances[$item[static::$id_field]] = new static($item);
+					static::$_instances[$item[static::$id_field]] = static::produce($item);
 				}
 
 				if(!empty($items) && $options['cache']['set']){
@@ -292,7 +296,7 @@ namespace Emylie\Core\Data {
 
 				//	If cached, assign to registry
 				if(Cache::NOT_CACHED !== $cache_result){
-					static::$_instances[$id] = new static($cache_result);
+					static::$_instances[$id] = static::produce($cache_result);
 
 				//	Otherwise, fetch from DB, assign to registry, then cache
 				} else {
@@ -313,7 +317,7 @@ namespace Emylie\Core\Data {
 							Cache::instance('main')->set($key, $item);
 						}
 
-						static::$_instances[$id] = new static($item);
+						static::$_instances[$id] = static::produce($item);
 					}else{
 						static::$_instances[$id] = null;
 					}
@@ -413,7 +417,7 @@ namespace Emylie\Core\Data {
 		}
 
 		public function copy(){
-			$object = new static($this->info);
+			$object = static::produce($this->info);
 
 			unset($object->info[static::$id_field]);
 			unset($object->info['date_added']);
@@ -465,6 +469,10 @@ namespace Emylie\Core\Data {
 			}
 
 			return $this->extensions[$type];
+		}
+
+		public static function clearRegistry(){
+			static::$_instances = [];
 		}
 
 		public static function count($options){
