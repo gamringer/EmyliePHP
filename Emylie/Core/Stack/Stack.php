@@ -20,7 +20,7 @@ namespace Emylie\Core\Stack {
 
 		public $template;
 
-		public function __construct($type, $action = 'default', $data = null){
+		public function __construct($type, $action = 'default', $data = []){
 			$this->_content = '';
 
 			$this->_action = $action;
