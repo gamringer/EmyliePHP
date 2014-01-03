@@ -7,7 +7,7 @@ namespace Emylie\Core\Stack {
 		public $data;
 		public $input;
 
-		private $_keyPair = null;
+		protected $_authenticatedIdentity = null;
 		private $_router;
 		private $_route;
 
@@ -16,25 +16,14 @@ namespace Emylie\Core\Stack {
 			$this->data = json_decode($this->input, true);
 
 			$this->_router = new Router();
-			$this->_router->register(new Route('/:controller/:id/:extension/*', ['action' => 'default'], function($data){
-				if((int)$data['id'] == 0){
-					return false;
-				}
-
-				return true;
-			}));
-			$this->_router->register(new Route('/:controller/:id/*', ['action' => 'default'], function($data){
-				if((int)$data['id'] == 0){
-					return false;
-				}
-
-				return true;
-			}));
+			$this->_router->register(new Route('/:controller/:id/:extension/*', ['action' => 'default']));
+			$this->_router->register(new Route('/:controller/:id/*', ['action' => 'default']));
 			$this->_router->register(new Route('/:controller/:action/*'));
+			$this->_router->register(new Route('/:controller/*', ['action'=>'default']));
 			$this->_router->register(new Route('/*', ['controller'=>'Error', 'action'=>'404']));
 		}
 
-		public final function execute($command){
+		public final function execute($command, $data = []){
 
 			if(!DEV && $this->_secure && (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on')){
 				header('HTTP/1.1 403 Forbidden', 403);
@@ -57,8 +46,8 @@ namespace Emylie\Core\Stack {
 			return $this->_route;
 		}
 
-		public function getKeyPair(){
-			return $this->_keyPair;
+		public function getAuthenticatedIdentity(){
+			return $this->_authenticatedIdentity;
 		}
 
 		protected function protectRoute($route){
