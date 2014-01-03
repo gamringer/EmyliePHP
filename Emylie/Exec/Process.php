@@ -4,6 +4,7 @@ namespace Emylie\Exec{
 	Class Process{
 		
 		public static $forked = false;
+		private static $_eventBase;
 
 		private static $_runningChildren = [];
 
@@ -26,15 +27,7 @@ namespace Emylie\Exec{
 		}
 
 		private static function _prepareFirstFork(){
-			pcntl_signal(SIGCHLD, function($signal){
-				while($childpid = pcntl_waitpid(0, $status, WNOHANG)){
-					if($childpid == -1){
-						return;
-					}
-
-					self::$_runningChildren[$childpid]->handleSignalStatus(pcntl_wexitstatus($status));
-				}
-			}, true);
+			pcntl_signal(SIGCHLD, SIG_IGN);
 		}
 
 		public static function awaitRelease(){
@@ -55,5 +48,14 @@ namespace Emylie\Exec{
 			return getmypid();
 		}
 
+		public static function getEventBase(){
+
+			if(!isset(static::$_eventBase)){
+				static::$_eventBase = new \EventBase();
+			}
+
+			return static::$_eventBase;
+		}
+
 	}
-}	
+}   
