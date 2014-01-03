@@ -4,6 +4,7 @@ namespace Emylie\Core\Stack {
 
 	use \Emylie\Core\URIExtractor;
 	use \Emylie\Core\Config;
+	use \Emylie\Exec\Process;
 
 	class Application{
 
@@ -248,6 +249,34 @@ namespace Emylie\Core\Stack {
 			}
 
 			return $ip;
+		}
+
+		public function daemonize(\Closure $command, $pidfile){
+			$lock = fopen($pidfile, 'c+');
+			if (!flock($lock, LOCK_EX | LOCK_NB)) {
+				return false;
+			}
+
+			$locking = function() use ($lock, $command){
+				
+				if (posix_setsid() === -1) {
+					return false;
+				}
+
+				fseek($lock, 0);
+				ftruncate($lock, 0);
+				fwrite($lock, $this->getPID());
+				fflush($lock);
+				
+				fclose(STDIN);
+				fclose(STDOUT);
+				fclose(STDERR);
+				
+				$command();
+			};
+			Process::fork()->run($locking);
+
+			return true;
 		}
 
 	}
