@@ -78,6 +78,16 @@ namespace Emylie {
 			return $v[1]<<32 | $v[2];
 		}
 
+		public static function dateUNIX($timestamp = null){
+			if($timestamp === null || (int)$timestamp !== $timestamp){
+				$timestamp = time();
+			}
+
+			list($y,$m,$d) = explode('.', date('Y.m.d', $timestamp));
+
+			return mktime(0,0,0,$m,$d,$y);
+		}
+
 	}
 
 }
