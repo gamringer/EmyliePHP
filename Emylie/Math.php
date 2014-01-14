@@ -29,12 +29,14 @@ namespace Emylie {
 
 			$amount *= $positive ? 1 : -1;
 
-			$result = number_format($amount, $decimals) . $separator . $prefixes[$prefixIndex] . $unit;
+			$result = number_format($amount, $decimals);
 
 			if(!$zeropad){
 				$result = trim($result, '0,. ');
 			}
 
+			$result .= $separator . $prefixes[$prefixIndex] . $unit;
+			
 			return $result;
 		}
 
