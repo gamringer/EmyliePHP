@@ -22,17 +22,15 @@ namespace Emylie\Exec{
 			if(!$this->_running){
 				$this->_running = true;
 			}
-
+			
 			if($context == null){
 				$context = $this;
 			}
-
-			$command->bindTo($context);
+			$command = $command->bindTo($context);
 
 			$ppid = getmypid();
 			$pid = pcntl_fork();
 			if($pid == 0){
-
 
 				$this->_pid = getmypid();
 				$this->_ppid = $ppid;
