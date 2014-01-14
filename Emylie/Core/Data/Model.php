@@ -441,6 +441,32 @@ namespace Emylie\Core\Data {
 			return $class::find(isset($this->info[$class::$id_field]) ? $this->info[$class::$id_field] : null);
 		}
 
+		public function addChild($child, $info = [], $override = true){
+
+			if(
+				!isset($this->ID)
+			 || !isset($child->ID)
+			){
+				return false;
+			}
+
+			$childClass = get_class($child);
+			$childClass = substr($childClass, strrpos($childClass, '\\') + 1);
+
+			if(!isset(static::$has_many[$childClass])){
+				return false;
+			}
+
+			return $this->getDB()->insert(static::$has_many[$childClass], [
+				static::$id_field => $this->ID,
+				$child::$id_field => $child->ID,
+				'active' => 1,
+				'date_added' => time()
+			], !$override, [
+				'active' => 1
+			]);
+		}
+
 		/*
 		 * Collections not complete yet, do not use
 		 * */
