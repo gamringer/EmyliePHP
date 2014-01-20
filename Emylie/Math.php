@@ -90,6 +90,16 @@ namespace Emylie {
 			return mktime(0,0,0,$m,$d,$y);
 		}
 
+		public static function hourUNIX($timestamp = null){
+			if($timestamp === null || (int)$timestamp !== $timestamp){
+				$timestamp = time();
+			}
+
+			list($y,$m,$d,$h) = explode('.', date('Y.m.d.H', $timestamp));
+
+			return mktime($h,0,0,$m,$d,$y);
+		}
+
 	}
 
 }
