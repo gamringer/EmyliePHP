@@ -2,6 +2,8 @@
 
 namespace Emylie\IO\Websocket {
 		
+	use \Emylie\Exec\Process;
+	
 	class Peer{
 
 		use \Emylie\Traits\Dispatcher;
@@ -197,16 +199,17 @@ namespace Emylie\IO\Websocket {
 		}
 
 		private function _close(){
+
+			$this->_dispatch([
+				'name' => self::EV_DISCONNECT
+			]);
+
 			$this->_connected = false;
 
 			$this->_event->free();
 			$this->_server->getEvBase()->stop();
 
 			stream_socket_shutdown($this->socket, STREAM_SHUT_RDWR);
-
-			$this->_dispatch([
-				'name' => self::EV_DISCONNECT
-			]);
 		}
 
 		public function enableCrypto($mode){
