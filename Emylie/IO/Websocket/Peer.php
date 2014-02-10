@@ -15,6 +15,7 @@ namespace Emylie\IO\Websocket {
 
 		private $_connected = true;
 		private $_server;
+		private $_evBase;
 		private $_event;
 		
 		static protected $_instances = [];
@@ -219,9 +220,11 @@ namespace Emylie\IO\Websocket {
 
 		public function start(){
 
+			$this->_evBase = $this->_server->getEvBase();
+
 			$this->_handshake();
 
-			$this->_event = new \Event($this->_server->getEvBase(), $this->socket, \Event::READ | \Event::PERSIST, $this->_handleMessage(), $this->socket);
+			$this->_event = new \Event($this->_evBase, $this->socket, \Event::READ | \Event::PERSIST, $this->_handleMessage(), $this->socket);
 			$this->_event->add();
 		}
 
