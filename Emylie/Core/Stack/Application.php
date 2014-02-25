@@ -268,9 +268,9 @@ namespace Emylie\Core\Stack {
 				fwrite($lock, $this->getPID());
 				fflush($lock);
 				
-				fclose(STDIN);
-				fclose(STDOUT);
-				fclose(STDERR);
+				//fclose(STDIN);
+				//fclose(STDOUT);
+				//fclose(STDERR);
 				
 				$command();
 			};
