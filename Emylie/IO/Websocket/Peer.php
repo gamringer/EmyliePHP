@@ -161,38 +161,40 @@ namespace Emylie\IO\Websocket {
 		private function _handleMessage(){
 			$f = function($socket){
 
-				$headerByte = ord(fread($socket, 1));
+				do{
+					$headerByte = ord(fread($socket, 1));
 
-				if(feof($socket)){
-					return $this->_close();
-				}
+					if(feof($socket)){
+						return $this->_close();
+					}
 
-				$opcodeBits = $headerByte & 0b00001111;
-				$header = [
-					'fin' => ($headerByte & 0b10000000) == 0b10000000,
-					'rsv1' => ($headerByte & 0b01000000) == 0b01000000,
-					'rsv2' => ($headerByte & 0b00100000) == 0b00100000,
-					'rsv3' => ($headerByte & 0b00010000) == 0b00010000,
-					'opcode' => $opcodeBits,
+					$opcodeBits = $headerByte & 0b00001111;
+					$header = [
+						'fin' => ($headerByte & 0b10000000) == 0b10000000,
+						'rsv1' => ($headerByte & 0b01000000) == 0b01000000,
+						'rsv2' => ($headerByte & 0b00100000) == 0b00100000,
+						'rsv3' => ($headerByte & 0b00010000) == 0b00010000,
+						'opcode' => $opcodeBits,
 
-					'continuation' => $opcodeBits == 0x0,
-					'text' => $opcodeBits == 0x1,
-					'binary' => $opcodeBits == 0x2,
-					'close' => $opcodeBits == 0x8,
-					'ping' => $opcodeBits == 0x9,
-					'pong' => $opcodeBits == 0xa,
-				];
+						'continuation' => $opcodeBits == 0x0,
+						'text' => $opcodeBits == 0x1,
+						'binary' => $opcodeBits == 0x2,
+						'close' => $opcodeBits == 0x8,
+						'ping' => $opcodeBits == 0x9,
+						'pong' => $opcodeBits == 0xa,
+					];
 
-				$content = $this->recv($header);
+					$content = $this->recv($header);
 
-				if($header['close']){
-					return $this->_close();
-				}
-				
-				$this->_dispatch([
-					'name' => self::EV_MESSAGE,
-					'message' => $content
-				]);
+					if($header['close']){
+						return $this->_close();
+					}
+					
+					$this->_dispatch([
+						'name' => self::EV_MESSAGE,
+						'message' => $content
+					]);
+				}while(stream_get_meta_data($socket)['unread_bytes'] > 0);
 				
 			};
 
