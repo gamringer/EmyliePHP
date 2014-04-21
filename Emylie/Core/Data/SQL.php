@@ -216,6 +216,7 @@ namespace Emylie\Core\Data {
 			if(isset($statements['having'][0]))$sql[] = 'HAVING '.implode(' AND ',$statements['having']);
 			if(isset($statements['order'][0]))$sql[] = 'ORDER BY '.implode(', ',$statements['order']);
 			if(isset($statements['limit']))$sql[] = 'LIMIT '.$statements['offset'].','.$statements['limit'];
+			if(isset($statements['lock']) && $statements['lock'])$sql[] = 'LOCK IN SHARE MODE';
 
 			return $this->read(implode(' ', $sql));
 		}

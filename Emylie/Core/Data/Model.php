@@ -14,6 +14,7 @@ namespace Emylie\Core\Data {
 		public static $fields;
 
 		public static $cacheable = false;
+		public static $registerable = true;
 
 		public static $has_many = [];
 		public static $registreable_extensions = [];
@@ -272,6 +273,14 @@ namespace Emylie\Core\Data {
 			return null;
 		}
 
+		public function lock(){
+			static::find($this->ID, [
+				'cache' => ['get' => false],
+				'registry' => ['get' => false],
+				'lock' => true
+			]);
+		}
+
 		public static function find($id, $options = []){
 
 			//	Cut out obvious null
@@ -279,11 +288,14 @@ namespace Emylie\Core\Data {
 				return null;
 			}
 
+			$options['lock'] = isset($options['lock']) && $options['lock'];
+			$options['registry']['get'] = isset($options['registry']['get']) ? $options['registry']['get'] : static::$registerable;
+			$options['registry']['set'] = isset($options['registry']['set']) ? $options['registry']['set'] : static::$registerable;
 			$options['cache']['get'] = isset($options['cache']['get']) ? $options['cache']['get'] : static::$cacheable;
 			$options['cache']['set'] = isset($options['cache']['set']) ? $options['cache']['set'] : static::$cacheable;
 
 			//	Look in Registry
-			if(!isset(static::$_instances[$id])){
+			if(!isset(static::$_instances[$id]) || !$options['registry']['get']){
 
 				//Look in Cache
 				if ($options['cache']['get']) {
@@ -292,7 +304,6 @@ namespace Emylie\Core\Data {
 				} else {
 					$cache_result = Cache::NOT_CACHED;
 				}
-
 
 				//	If cached, assign to registry
 				if(Cache::NOT_CACHED !== $cache_result){
@@ -306,7 +317,8 @@ namespace Emylie\Core\Data {
 						'from' => array(static::$table_name),
 						'where' => array(
 							static::$id_field.' = '.$id
-						)
+						),
+						'lock' => $options['lock']
 					);
 					$db_result = static::getDB()->select($sql);
 
