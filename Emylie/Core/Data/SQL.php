@@ -12,6 +12,7 @@ namespace Emylie\Core\Data {
 		private $_info;
 		private $_connection_write = null;
 		private $_connection_read = null;
+		private $_tx_connection = null;
 
 		private $_tables = array();
 
@@ -62,6 +63,10 @@ namespace Emylie\Core\Data {
 		}
 
 		public function getConnection($mode){
+			if($this->_tx_connection != null){
+				$mode = $this->_tx_connection;
+			}
+			
 			$connection = '_connection_'.$mode;
 
 			if($this->$connection == null){
@@ -72,6 +77,7 @@ namespace Emylie\Core\Data {
 		}
 
 		public function xBegin($mode){
+			$this->_tx_connection = $mode;
 			mysqli_autocommit($this->getConnection($mode), false);
 		}
 
@@ -81,6 +87,7 @@ namespace Emylie\Core\Data {
 
 		public function xCommitFinal($mode){
 			mysqli_autocommit($this->getConnection($mode), true);
+			$this->_tx_connection = null;
 		}
 
 		public function xRollback($mode){
@@ -90,6 +97,7 @@ namespace Emylie\Core\Data {
 		public function xRollbackFinal($mode){
 			mysqli_rollback($this->getConnection($mode));
 			mysqli_autocommit($this->getConnection($mode), true);
+			$this->_tx_connection = null;
 		}
 
 		public function escape($value, $quotes = true){
@@ -117,16 +125,14 @@ namespace Emylie\Core\Data {
 		}
 
 		public function read($sql){
-			if(null === $this->_connection_read){
-				$this->connect('read');
-			}
+			$connection = $this->getConnection('read');
 
-			$result = mysqli_query($this->_connection_read, $sql);
+			$result = mysqli_query($connection, $sql);
 
 			$return = array();
 
 			if($result === false){
-				$this->error($this->_connection_read, $sql);
+				$this->error($connection, $sql);
 			} else {
 				while($row = mysqli_fetch_assoc($result)){
 					$return[] = $row;
@@ -165,25 +171,23 @@ namespace Emylie\Core\Data {
 		}
 
 		public function write($sql){
-			if(null === $this->_connection_write){
-				$this->connect('write');
-			}
+			$connection = $this->getConnection('write');
 
-			$result = mysqli_multi_query($this->_connection_write, $sql);
+			$result = mysqli_multi_query($connection, $sql);
 
 			if($result === false){
-				$this->error($this->_connection_write, $sql);
+				$this->error($connection, $sql);
 
 				return false;
 			}
 
 			$return = null;
 			do {
-				if($result = mysqli_store_result($this->_connection_write)){
+				if($result = mysqli_store_result($connection)){
 					$return = mysqli_fetch_assoc($result);
 					$result->free();
 				}
-			} while (mysqli_more_results($this->_connection_write) && mysqli_next_result($this->_connection_write));
+			} while (mysqli_more_results($connection) && mysqli_next_result($connection));
 
 			return $return;
 		}
