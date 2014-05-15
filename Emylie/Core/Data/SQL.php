@@ -194,13 +194,21 @@ namespace Emylie\Core\Data {
 
 		public function select($statements){
 
-			if(!isset($statements['offset']) || $statements['offset'] < 0){
-				$statements['offset'] = 0;
+			if(isset($statements['count']) && $statements['count']){
+				$statements['selectoption'] = 'SQL_CALC_FOUND_ROWS';
+			}
+
+			if(isset($statements['limit'])){
+				if(!isset($statements['offset']) || $statements['offset'] < 0){
+					$statements['offset'] = 0;
+				}
+			}else{
+				unset($statements['offset']);
 			}
 
 			$sql = array();
-			$sql[] = 'SELECT '.implode(',',$statements['fields']);
-			$sql[] = 'FROM '.implode(',',$statements['from']);
+			$sql[] = 'SELECT '.(isset($statements['selectoption']) ? $statements['selectoption'].' ' : '').implode(',',$statements['fields']);
+			if(isset($statements['from'])){$sql[] = 'FROM '.implode(',',$statements['from']);}
 			if(isset($statements['joins'])){
 				foreach($statements['joins'] as $table => $field){
 					$sql[] = 'JOIN '.$table.' '.(substr($field, 0, 3) == 'ON ' ? $field : 'USING('.$field.')');
@@ -219,6 +227,11 @@ namespace Emylie\Core\Data {
 			if(isset($statements['lock']) && $statements['lock'])$sql[] = 'LOCK IN SHARE MODE';
 
 			return $this->read(implode(' ', $sql));
+		}
+
+		public function count(){
+			$statements = ['fields' => ['FOUND_ROWS()']];
+			return $this->selectValue($statements);
 		}
 
 		public function selectOne($statements){
