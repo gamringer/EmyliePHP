@@ -18,6 +18,9 @@ namespace Emylie\Core\Stack {
 		protected $_default_controller = 'Default';
 		protected $_default_controllers = [];
 
+		protected $_output_log_path = 'output.log';
+		protected $_error_log_path = 'error.log';
+
 		private static $_session_started = false;
 
 		private $_dir;
@@ -268,9 +271,13 @@ namespace Emylie\Core\Stack {
 				fwrite($lock, $this->getPID());
 				fflush($lock);
 				
-				//fclose(STDIN);
-				//fclose(STDOUT);
-				//fclose(STDERR);
+				fclose(STDIN);
+				fclose(STDOUT);
+				fclose(STDERR);
+
+				$STDIN = fopen('/dev/null', 'r');
+				$STDOUT = fopen($this->_output_log_path, 'wb');
+				$STDERR = fopen($this->_error_log_path, 'wb');
 				
 				$command();
 			};
