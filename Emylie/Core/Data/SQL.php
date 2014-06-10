@@ -142,6 +142,32 @@ namespace Emylie\Core\Data {
 			return $return;
 		}
 
+		public function affected($mode = 'write'){
+			return mysqli_affected_rows($this->getConnection($mode));
+		}
+
+		public function info($mode = 'write'){
+			$info = mysqli_info($this->getConnection($mode));
+			$affected = $this->affected($mode);
+
+			if($info == null){
+				$match = ['', 1, $affected == 2 ? 1 : 0, 0];
+			}else{
+				preg_match('/Records: (\d+)  Duplicates: (\d+)  Warnings: (\d+)/', $info, $match);
+			}
+
+			$result = [
+				'records' => $match[1],
+				'duplicates' => $match[2],
+				'warnings' => $match[3],
+			];
+
+			$result['new'] = $affected - ($result['duplicates'] * 2);
+			$result['unchanged'] = $result['records'] - $result['new'] - $result['duplicates'];
+
+			return $result;
+		}
+
 		public function readRow($sql){
 			$result = $this->read($sql);
 
@@ -285,7 +311,19 @@ namespace Emylie\Core\Data {
 
 			$ignore = isset($options['ignore']) && $options['ignore'] ? ' IGNORE' : '';
 
-			$sql = 'INSERT'.$ignore.' INTO '.$table_name.' (`'.implode('`,`', array_keys($items[0])).'`) VALUES '.implode(',', $values).'';
+			$update = '';
+			$upates = [];
+			if(isset($options['overwrite'])){
+				$ignore = '';
+				foreach($options['overwrite'] as $field){
+					$updates[] = $field.'=VALUES('.$field.')';
+				}
+			}
+			if(!empty($updates)){
+				$update = ' ON DUPLICATE KEY UPDATE '.implode(',', $updates);
+			}
+
+			$sql = 'INSERT'.$ignore.' INTO '.$table_name.' (`'.implode('`,`', array_keys($items[0])).'`) VALUES '.implode(',', $values).$update;
 
 			$this->write($sql);
 		}
