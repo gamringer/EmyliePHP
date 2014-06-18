@@ -38,8 +38,8 @@ namespace Emylie\Core {
 			return $this;
 		}
 
-		public function createAccessToken($expire = 10){
-			return Crypto::encryptArray(Config::$config['passphrase'], [
+		public function createAccessToken($key, $expire = 10){
+			return Crypto::encryptArray($key, [
 				'id' => $this->ID,
 				'type' => basename(str_replace('\\', '/', get_class($this))),
 				'expire' => time() + $expire
