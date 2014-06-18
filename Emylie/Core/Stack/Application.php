@@ -255,22 +255,23 @@ namespace Emylie\Core\Stack {
 		}
 
 		public function daemonize(\Closure $command, $pidfile){
-			$lock = fopen($pidfile, 'c+');
-			if (!flock($lock, LOCK_EX | LOCK_NB)) {
+			$this->pidfile = $pidfile;
+			$this->pidlock = fopen($pidfile, 'c+');
+			if (!flock($this->pidlock, LOCK_EX | LOCK_NB)) {
 				return false;
 			}
 
-			$locking = function() use ($lock, $command){
+			$locking = function() use ($command){
 				
 				if (posix_setsid() === -1) {
 					return false;
 				}
 
-				fseek($lock, 0);
-				ftruncate($lock, 0);
-				fwrite($lock, $this->getPID());
-				fflush($lock);
-				
+				fseek($this->pidlock, 0);
+				ftruncate($this->pidlock, 0);
+				fwrite($this->pidlock, Process::getPID());
+				fflush($this->pidlock);
+
 				fclose(STDIN);
 				fclose(STDOUT);
 				fclose(STDERR);
@@ -281,9 +282,16 @@ namespace Emylie\Core\Stack {
 				
 				$command();
 			};
-			Process::fork()->run($locking);
+			Process::fork()->run($locking, $this);
 
 			return true;
+		}
+
+		public function killDaemon(){
+			fclose($this->pidlock);
+			unlink($this->pidfile);
+
+			exit();
 		}
 
 	}
