@@ -273,12 +273,20 @@ namespace Emylie\Core\Data {
 			return null;
 		}
 
-		public function lock(){
-			static::find($this->ID, [
-				'cache' => ['get' => false],
-				'registry' => ['get' => false],
-				'lock' => true
-			]);
+		public function lock($refresh = true){
+			if($this->ID != null){
+				$tmp = static::find($this->ID, [
+					'cache' => ['get' => false, 'set'=>false],
+					'registry' => ['get' => false, 'set'=>false],
+					'lock' => true
+				]);
+
+				if($refresh){
+					$this->info = $tmp->info;
+				}
+			}
+
+			return $this;
 		}
 
 		public static function find($id, $options = []){
@@ -523,5 +531,18 @@ namespace Emylie\Core\Data {
 				return $db_result[0]['count'];
 			}
 		}
+/*
+		public function lock($update = true){
+			if($this->ID == null){
+				return $this;
+			}
+			
+			static::find($this->ID, [
+				'lock' => true
+			])
+
+			return $this;
+		}
+*/
 	}
 }
