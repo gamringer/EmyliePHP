@@ -27,7 +27,7 @@ namespace Emylie\Transactional {
 
 		public static function produce($i_name = 'default', $info = null){
 			if($info == null){
-				$info = Config::$config['btcoin'][$i_name];
+				$info = Config::$config['bitcoin'][$i_name];
 			}
 			if(!isset(static::$_instances[$i_name])){
 				static::$_instances[$i_name] = new static($i_name, $info);
