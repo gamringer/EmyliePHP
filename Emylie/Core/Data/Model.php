@@ -432,6 +432,9 @@ namespace Emylie\Core\Data {
 		}
 
 		public function removeCache(){
+			if(!isset(Config::$config['cache']['main'])){
+				return;
+			}
 			$key = Config::$config['cache']['main']['prefix'].'model:'.static::$table_name.':'.$this->ID;
 			Cache::instance('main')->delete($key);
 
@@ -533,18 +536,5 @@ namespace Emylie\Core\Data {
 				return $db_result[0]['count'];
 			}
 		}
-/*
-		public function lock($update = true){
-			if($this->ID == null){
-				return $this;
-			}
-			
-			static::find($this->ID, [
-				'lock' => true
-			])
-
-			return $this;
-		}
-*/
 	}
 }
