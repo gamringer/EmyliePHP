@@ -89,6 +89,8 @@ namespace Emylie\Core\Data {
 			$this->info[static::$id_field] = $this->ID;
 
 			static::$_instances[$this->ID] = $this;
+
+			return $this;
 		}
 
 		public function update($fields = null){
