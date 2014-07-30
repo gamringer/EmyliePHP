@@ -274,12 +274,14 @@ namespace Emylie\Core\Stack {
 
 				fclose(STDIN);
 				fclose(STDOUT);
-				fclose(STDERR);
 
 				$STDIN = fopen('/dev/null', 'r');
 				$STDOUT = fopen($this->_output_log_path, 'wb');
-				$STDERR = fopen($this->_error_log_path, 'wb');
 				
+				ini_set('display_errors', false);
+				ini_set('log_errors', true);
+				ini_set('error_log', $this->_error_log_path);
+
 				$command();
 			};
 			Process::fork()->run($locking, $this);
