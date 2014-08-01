@@ -1,0 +1,13 @@
+{
+    "name": "gamringer/emylie-php",
+    "description": "My PHP Library",
+    "authors": [
+        {
+            "name": "Guillaume Amringer",
+            "email": "g.amringer+github@gmail.com"
+        }
+    ],
+    "require": {
+
+    }
+}
