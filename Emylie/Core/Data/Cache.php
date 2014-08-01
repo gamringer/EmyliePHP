@@ -16,7 +16,11 @@ namespace Emylie\Core\Data {
 
         public static function instance($i_name = 'default'){
                 if(!isset(self::$_instances[$i_name])){
-					$adapter_class = '\Emylie\Core\Data\Cache\Adapter'.Config::$config['cache'][$i_name]['type'];
+                	$type = 'Empty';
+                	if(isset(Config::$config['cache'][$i_name])){
+                		$type = Config::$config['cache'][$i_name]['type'];
+                	}
+					$adapter_class = '\Emylie\Core\Data\Cache\Adapter'.$type;
 					self::$_instances[$i_name] = new $adapter_class($i_name);
                 }
 
