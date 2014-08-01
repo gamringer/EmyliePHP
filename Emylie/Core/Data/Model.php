@@ -158,8 +158,9 @@ namespace Emylie\Core\Data {
 	    	];
 			unset($options['cache']);
 
-			$key = Config::$config['cache']['main']['prefix'].'model_query:'.static::$table_name.':'.md5(json_encode($options));
-
+			if($cache['get'] || $cache['set']){
+				$key = Config::$config['cache']['main']['prefix'].'model_query:'.static::$table_name.':'.md5(json_encode($options));
+			}
 			if($cache['get']){
 				$list = Cache::instance('main')->get($key);
 			}else{
@@ -241,7 +242,9 @@ namespace Emylie\Core\Data {
 				//	Save to Cache and Registry
 				$items = array();
 				foreach($db_result as $item){
-					$items[Config::$config['cache']['main']['prefix'].'model:'.static::$table_name.':'.$item[static::$id_field]] = $item;
+					if($options['cache']['set']){
+						$items[Config::$config['cache']['main']['prefix'].'model:'.static::$table_name.':'.$item[static::$id_field]] = $item;
+					}
 					static::$_instances[$item[static::$id_field]] = static::produce($item);
 				}
 
