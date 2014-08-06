@@ -20,6 +20,8 @@ namespace Emylie\Core\Data {
 		public static $registreable_extensions = [];
 		public static $lockedFields = [];
 
+		public static $lastCount = null;
+
 		public $info;
 		public $collections = [];
 		public $extensions = [];
@@ -172,6 +174,7 @@ namespace Emylie\Core\Data {
 				$options['from'] = [static::$table_name];
 
 				$items = static::getDB()->select($options);
+				static::$lastCount = static::getDB()->count();
 				$list = array();
 				foreach($items as $item){
 					$list[] = $item[static::$id_field];
