@@ -154,6 +154,8 @@ namespace Emylie\Core\Data {
 
 		public static function findAll($options){
 
+			static::$lastCount = null;
+
 		    $cache = [
 		    	'get' => isset($options['cache']['get']) ? $options['cache']['get'] : static::$cacheable,
 		    	'set' => isset($options['cache']['set']) ? $options['cache']['set'] : static::$cacheable
@@ -174,7 +176,9 @@ namespace Emylie\Core\Data {
 				$options['from'] = [static::$table_name];
 
 				$items = static::getDB()->select($options);
-				static::$lastCount = static::getDB()->count();
+				if(isset($options['count']) && $options['count']){
+					static::$lastCount = static::getDB()->count();
+				}
 				$list = array();
 				foreach($items as $item){
 					$list[] = $item[static::$id_field];
