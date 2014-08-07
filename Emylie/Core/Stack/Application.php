@@ -284,7 +284,11 @@ namespace Emylie\Core\Stack {
 
 				$command();
 			};
-			Process::fork()->run($locking, $this);
+			$fork = Process::fork()->run($locking, $this);
+
+			while(posix_getsid(0) == posix_getsid($fork->getPID())){
+				usleep(250000);
+			}
 
 			return true;
 		}
