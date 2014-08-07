@@ -255,15 +255,15 @@ namespace Emylie\Core\Stack {
 		}
 
 		public function daemonize(\Closure $command, $pidfile){
-			$this->pidfile = $pidfile;
-			$this->pidlock = fopen($pidfile, 'c+');
-			if (!flock($this->pidlock, LOCK_EX | LOCK_NB)) {
-				return false;
-			}
+			$locking = function() use ($command, $pidfile){
 
-			$locking = function() use ($command){
-				
 				if (posix_setsid() === -1) {
+					return false;
+				}
+
+				$this->pidfile = $pidfile;
+				$this->pidlock = fopen($pidfile, 'c+');
+				if (!flock($this->pidlock, LOCK_EX | LOCK_NB)) {
 					return false;
 				}
 
