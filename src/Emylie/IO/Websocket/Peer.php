@@ -62,18 +62,15 @@ namespace Emylie\IO\Websocket {
 			if($masked){
 				$mask = fread($this->socket, 4);
 			}
-			$text = '';
-			if($length > 0){
-				$data = fread($this->socket, $length);
 
-				if($masked){
-					for ($i = 0; $i < strlen($data); ++$i) {
-						$text .= $data[$i] ^ $mask[$i%4];
-					}
+			$data = fread($this->socket, $length);
+			if($masked){
+				for ($i = 0; $i < $length; ++$i) {
+					$data[$i] = $data[$i] ^ $mask[$i%4];
 				}
 			}
 			
-			return $text;
+			return $data;
 		}
 
 		public function send($data){
@@ -183,6 +180,7 @@ namespace Emylie\IO\Websocket {
 						'ping' => $opcodeBits == 0x9,
 						'pong' => $opcodeBits == 0xa,
 					];
+					print_r($header);
 
 					$content = $this->recv($header);
 
@@ -216,11 +214,12 @@ namespace Emylie\IO\Websocket {
 		}
 
 		public function enableCrypto($mode){
-			stream_set_blocking($this->socket, true);
 			stream_socket_enable_crypto($this->socket, true, $mode, $this->socket);
 		}
 
 		public function start(){
+			stream_set_blocking($this->socket, true);
+			stream_set_read_buffer($this->socket, 0);
 
 			$this->_evBase = $this->_server->getEvBase();
 
