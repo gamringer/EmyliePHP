@@ -1,8 +1,8 @@
 <?php
 
-namespace Emylie {
+namespace Emylie\Util {
 
-	class Utils {
+	class String {
 
 		public static function toClassName($str){
 

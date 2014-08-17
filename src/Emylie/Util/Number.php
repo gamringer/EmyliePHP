@@ -1,6 +1,6 @@
 <?php
 
-namespace Emylie {
+namespace Emylie\Util {
 
 	class Number {
 
