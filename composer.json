@@ -13,7 +13,7 @@
     "autoload": {
         "psr-0": {
             "Emylie": "src/",
-            "Emylie\\test": "test/"
+            "Emylie\\Test": "test/"
         }
     }
 }
