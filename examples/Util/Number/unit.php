@@ -1,7 +1,7 @@
 <?php
 
-include dirname(__FILE__).'/../../SplClassLoader.php';
-(new \SplClassLoader('Emylie', dirname(__FILE__).'/../../src'))->register();
+include dirname(__FILE__).'/../../../SplClassLoader.php';
+(new \SplClassLoader('Emylie', dirname(__FILE__).'/../../../src'))->register();
 
 $size = 1000000000000; // 1 Terabyte, ~931 GibiByte
 echo \Emylie\Util\Number::unit($size, 'B', true) . PHP_EOL;

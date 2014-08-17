@@ -1,7 +1,10 @@
 <?php
 
-include dirname(__FILE__).'/../../SplClassLoader.php';
-(new \SplClassLoader('Emylie', dirname(__FILE__).'/../../src'))->register();
+include dirname(__FILE__).'/../../../SplClassLoader.php';
+(new \SplClassLoader('Emylie\\Test', dirname(__FILE__).'/../../../tests'))->register();
+(new \SplClassLoader('Emylie', dirname(__FILE__).'/../../../src'))->register();
+
+new Emylie\Test\Util\MathTest();
 
 $amount		= 100;	//	100 Dollars
 $interest	= 0.05;	//	5% interest per period (ex: year)
