@@ -1,6 +1,6 @@
 <?php
 
-namespace Emylie {
+namespace Emylie\Test\Util {
 
     class StackTest extends \PHPUnit_Framework_TestCase {
 
