@@ -442,13 +442,13 @@ namespace Emylie\Core\Data {
 		}
 
 		public function removeCache(){
+			unset(static::$_instances[$this->ID]);
+
 			if(!isset(Config::$config['cache']['main'])){
 				return;
 			}
 			$key = Config::$config['cache']['main']['prefix'].'model:'.static::$table_name.':'.$this->ID;
 			Cache::instance('main')->delete($key);
-
-			unset(static::$_instances[$this->ID]);
 		}
 
 		public function copy(){
