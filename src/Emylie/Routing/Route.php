@@ -40,7 +40,7 @@ namespace Emylie\Routing
 			return $this->data;
 		}
 
-		public function match($target, &$extract)
+		public function match($target, &$extract = null)
 		{
 			if (preg_match('#^'.$this->pattern.'$#', $target, $extract)) {
 				return true;
