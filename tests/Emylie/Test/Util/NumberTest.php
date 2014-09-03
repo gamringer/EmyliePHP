@@ -23,6 +23,12 @@ namespace Emylie\Test\Util {
             $mass = 1100000; // 1.1 MegaTon
             $this->assertEquals('1,10 MT', Number::unit($mass, 'T', false, [2, ',', ' ']));
 
+            $mass = 0; // 0 Ton
+            $this->assertEquals('0 T', Number::unit($mass, 'T', false));
+
+            $mass = -35000; // -35 km
+            $this->assertEquals('-35 Km', Number::unit($mass, 'm', false));
+
         }
 
         public function testPackU64() {

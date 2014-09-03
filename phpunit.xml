@@ -1,2 +1,7 @@
-    <phpunit bootstrap="tests/bootstrap.php">
-    </phpunit>
+<phpunit bootstrap="tests/bootstrap.php">
+	<filter>
+		<blacklist>
+			<file>SplClassLoader.php</file>
+		</blacklist>
+	</filter>
+</phpunit>
