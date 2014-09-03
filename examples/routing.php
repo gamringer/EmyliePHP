@@ -16,12 +16,12 @@ $router = new \Emylie\Routing\Router();
 
 //	Define Strict Route
 $router->addRoute(new \Emylie\Routing\Route('foo', '(GET|POST) /(?<fap>foo)',
-											'\Emylie\Examples\Stack\HTTPResponseApplication\Views\DefaultView',
+											'\examples\Resources\Views\DefaultView->dynamicMethod',
 											['var'=>'123']));
 //	Define Catch-All Route
 $router->addRoute(new \Emylie\Routing\Route('bar', '.*',
-											'\Emylie\Examples\Stack\HTTPResponseApplication\Views\DefaultView',
+											'\examples\Resources\Views\DefaultView::staticMethod',
 											['var'=>'abc']));
 
-//	Return Dispatcheable Route
+//	Return Dispatcheable Package
 $package = $router->route($request);
