@@ -9,7 +9,7 @@ namespace Emylie\Util {
 			if ($amount == 0) {
 				array_unshift($number_format, 0);
 			
-				return call_user_func_array('number_format', $number_format);
+				return call_user_func_array('number_format', $number_format) . $separator . $unit;
 			}
 
 			$positive = true;
