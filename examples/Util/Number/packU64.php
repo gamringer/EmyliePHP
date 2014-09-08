@@ -3,7 +3,6 @@
 include dirname(__FILE__).'/../../../SplClassLoader.php';
 (new \SplClassLoader('Emylie', dirname(__FILE__).'/../../../src'))->register();
 
-
 $value = PHP_INT_MAX;
 echo 'Value to be packed: ' . $value . PHP_EOL;
 
