@@ -2,6 +2,7 @@
 	<filter>
 		<blacklist>
 			<file>SplClassLoader.php</file>
+			<directory>tests</directory>
 		</blacklist>
 	</filter>
 </phpunit>
