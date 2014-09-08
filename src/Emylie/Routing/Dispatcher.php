@@ -4,19 +4,23 @@ namespace Emylie\Routing
 {
 	class Dispatcher
 	{
-		public function __construct()
+
+		protected $router;
+
+		public function __construct(Routes $router)
 		{
-			
+			$this->router = $router;
 		}
 
-		public function dispatch(Dispatcheable $package)
+		public function dispatch(Routeable $request)
 		{
-			$destination = $package->getRoute()->getDestination();
+			$extract = null;
+			$route = $this->router->route($request, $extract);
+			
+			$destination = $route->getDestination();
 			$callable = $this->getCallable($destination);
 
-			$callable($package);
-			
-			return $this;
+			return $callable($request);
 		}
 
 		protected function getCallable($destination)
@@ -26,16 +30,20 @@ namespace Emylie\Routing
 			}
 			
 			if (preg_match('/^(?<class>[\w\\\\]+)(?<type>\-\>|::)(?<method>[\w\\\\]+)$/', $destination, $match)) {
+				$return = [];
 				if ($match['type'] == '->') {
-					return [new $match['class'](), $match['method']];
+					$return[] = new $match['class']();
+				
+				}elseif ($match['type'] == '::') {
+					$return[] = $match['class'];
 				}
+				
+				$return[] = $match['method'];
 
-				elseif ($match['type'] == '::') {
-					return [$match['class'], $match['method']];
-				}
+				return $return;
 			}
 
-			throw new \Exception('[Dispatcher] could not dispatch [Dispatcheable] to destination: '.$destination);
+			throw new Exception('[Dispatcher] could not dispatch [Dispatcheable] to destination: '.$destination);
 		}
 	}
 }

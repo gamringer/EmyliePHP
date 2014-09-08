@@ -11,5 +11,7 @@ namespace Emylie\Routing
 		public function getDestination();
 
 		public function getData();
+
+		public function match($target, &$extract = null);
 	}
 }

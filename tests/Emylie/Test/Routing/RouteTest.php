@@ -1,6 +1,6 @@
 <?php
 
-namespace Emylie\Test\Util {
+namespace Emylie\Test\Routing {
 
     use \Emylie\Routing\Route;
 

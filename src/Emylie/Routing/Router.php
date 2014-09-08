@@ -2,7 +2,7 @@
 
 namespace Emylie\Routing
 {
-	class Router
+	class Router implements Routes
 	{
 
 		protected $routes = [];
@@ -12,6 +12,16 @@ namespace Emylie\Routing
 			
 		}
 
+		public function clearRoutes()
+		{
+			$this->routes = [];
+		}
+
+		public function getRoutes()
+		{
+			return $this->routes;
+		}
+
 		public function addRoute(Ventureable $route)
 		{
 			$this->routes[$route->getName()] = $route;
@@ -19,16 +29,15 @@ namespace Emylie\Routing
 			return $this;
 		}
 
-		public function route(Routeable $request)
+		public function route(Routeable $request, &$extract = null)
 		{
-			$extract = null;
 			foreach ($this->routes as $route) {
 				if($route->match($request->getTarget(), $extract)){
-					return new Package($extract, $route, $request);
+					return $route;
 				}
 			}
 
-			throw new \Exception('No [Route] found to match the [Routeable]');
+			throw new Exception('No [Route] found to match the [Routeable]');
 		}
 	}
 }

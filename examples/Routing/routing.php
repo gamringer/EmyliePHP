@@ -1,8 +1,8 @@
 <?php
 
-include dirname(__FILE__).'/../SplClassLoader.php';
-(new \SplClassLoader('Emylie\Examples', dirname(__FILE__).'/../examples'))->register();
-(new \SplClassLoader('Emylie', dirname(__FILE__).'/../src'))->register();
+include dirname(__FILE__).'/../../SplClassLoader.php';
+(new \SplClassLoader('examples', dirname(__FILE__).'/../..'))->register();
+(new \SplClassLoader('Emylie', dirname(__FILE__).'/../../src'))->register();
 
 $request = new \Emylie\Stack\HTTP\Request('GET', '/examples/Stack/HTTPResponseApplication.php',
 	                                          [], [], []);
@@ -24,4 +24,6 @@ $router->addRoute(new \Emylie\Routing\Route('bar', '.*',
 											['var'=>'abc']));
 
 //	Return Dispatcheable Package
-$package = $router->route($request);
+$route = $router->route($request);
+
+var_dump($route);
