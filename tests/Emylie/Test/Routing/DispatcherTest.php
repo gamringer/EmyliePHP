@@ -7,6 +7,7 @@ namespace Emylie\Test\Routing {
     use \Emylie\Routing\Router;
     use \Emylie\Routing\Route;
     use \Emylie\Routing\Routeable;
+    use \Emylie\Test\Resources\Routing\MockRouteable;
 
     class DispatcherTest extends \PHPUnit_Framework_TestCase {
 
