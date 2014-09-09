@@ -1,6 +1,6 @@
 <?php
 
-namespace Emylie\Test\Routing {
+namespace Emylie\Test\Resources\Routing {
 
     use \Emylie\Routing\Routeable;
 

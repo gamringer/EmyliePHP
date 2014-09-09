@@ -5,6 +5,7 @@ namespace Emylie\Test\Routing {
 
     use \Emylie\Routing\Route;
     use \Emylie\Routing\Router;
+    use \Emylie\Test\Resources\Routing\MockRouteable;
 
     class RouterTest extends \PHPUnit_Framework_TestCase {
 
