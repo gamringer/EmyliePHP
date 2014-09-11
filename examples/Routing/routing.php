@@ -23,7 +23,9 @@ $router->addRoute(new \Emylie\Routing\Route('bar', '.*',
 											'\examples\Resources\Views\DefaultView::staticMethod',
 											['var'=>'abc']));
 
-//	Return Dispatcheable Package
-$route = $router->route($request);
+//	Return [Ventureable] Object and populates $extract
+$extract = null;
+$route = $router->route($request, $extract);
 
 var_dump($route);
+var_dump($extract);
