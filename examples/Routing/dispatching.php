@@ -36,3 +36,19 @@ $router->addRoute(new \Emylie\Routing\Route('bar', '.*',
 											'\examples\Resources\Views\DefaultView->dynamicMethod',
 											['var'=>'abc']));
 $dispatcher->dispatch($request);
+
+
+/**
+ *  Call Unknown path
+ */
+$router->clearRoutes();
+$router->addRoute(new \Emylie\Routing\Route('bar', '.*',
+											'unknown path',
+											['var'=>'abc']));
+try {
+	$dispatcher->dispatch($request);
+}
+
+catch(\Emylie\Routing\Exception $e){
+	echo $e->getMessage() . PHP_EOL;
+}
