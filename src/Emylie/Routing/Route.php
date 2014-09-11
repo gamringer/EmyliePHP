@@ -43,6 +43,9 @@ namespace Emylie\Routing
 		public function match($target, &$extract = null)
 		{
 			if (preg_match('#^'.$this->pattern.'$#', $target, $extract)) {
+
+				$extract = array_merge($this->data, $extract);
+				
 				return true;
 			}
 
