@@ -12,9 +12,9 @@ namespace Emylie\Routing
 
 		public function __construct($name, $pattern, $destination, Array $data = [])
 		{
-			$this->name = $name;
+			$this->name = (string) $name;
 
-			$this->pattern = $pattern;
+			$this->pattern = (string) $pattern;
 
 			$this->destination = $destination;
 			$this->data = $data;
