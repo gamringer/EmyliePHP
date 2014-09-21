@@ -2,7 +2,10 @@
 
 namespace Emylie\Routing
 {
-	class Router implements Routes
+
+	use \Emylie\DI\Service;
+
+	class Router implements Routes, Service
 	{
 
 		protected $routes = [];

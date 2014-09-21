@@ -2,7 +2,10 @@
 
 namespace Emylie\Routing
 {
-	class Dispatcher
+	
+	use \Emylie\DI\Service;
+
+	class Dispatcher implements Service
 	{
 
 		protected $router;
