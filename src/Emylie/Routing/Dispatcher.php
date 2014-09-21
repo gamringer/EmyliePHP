@@ -6,6 +6,7 @@ namespace Emylie\Routing
 	{
 
 		protected $router;
+		protected $rules = [];
 
 		public function __construct(Routes $router)
 		{
@@ -23,27 +24,31 @@ namespace Emylie\Routing
 			return $callable($request);
 		}
 
+		public function addRule(\Closure $rule)
+		{
+			$this->rules[] = $rule;
+		}
+
+		public function clearRules()
+		{
+			$this->rules = [];
+		}
+
+		public function getRules()
+		{
+			return $this->rules;
+		}
+
 		protected function getCallable($destination)
 		{
-			if ($destination instanceof \Closure) {
-				return $destination;
-			}
-			
-			if (preg_match('/^(?<class>[\w\\\\]+)(?<type>\-\>|::)(?<method>[\w\\\\]+)$/', $destination, $match)) {
-				$return = [];
-				if ($match['type'] == '->') {
-					$return[] = new $match['class']();
-				
-				}elseif ($match['type'] == '::') {
-					$return[] = $match['class'];
+			foreach ($this->rules as $rule) {
+				$ruling = $rule($destination);
+				if (is_callable($ruling)) {
+					return $ruling;
 				}
-				
-				$return[] = $match['method'];
-
-				return $return;
 			}
 
-			throw new Exception('[Dispatcher] could not dispatch [Dispatcheable] to destination: '.$destination);
+			throw new Exception('[Dispatcher] could not dispatch [Routeable] to destination');
 		}
 	}
 }

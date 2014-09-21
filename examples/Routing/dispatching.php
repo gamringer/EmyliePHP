@@ -8,13 +8,38 @@ $request = new \Emylie\Stack\HTTP\Request('GET', '/foo', [], [], []);
 $router = new \Emylie\Routing\Router();
 $dispatcher = new \Emylie\Routing\Dispatcher($router);
 
+$dispatcher->addRule(function($destination){
+	if ($destination instanceof \Closure) {
+		return $destination;
+	}
+
+	return false;
+});
+$dispatcher->addRule(function($destination){
+	if (preg_match('/^(?<class>[\w\\\\]+)(?<type>\-\>|::)(?<method>[\w\\\\]+)$/', $destination, $match)) {
+		$return = [];
+		if ($match['type'] == '->') {
+			$return[] = new $match['class']();
+		
+		}elseif ($match['type'] == '::') {
+			$return[] = $match['class'];
+		}
+		
+		$return[] = $match['method'];
+
+		return $return;
+	}
+	
+	return false;
+});
+
 /**
  *  Call Closure
  */
 $router->clearRoutes();
 $router->addRoute(new \Emylie\Routing\Route('bar', '.*',
-											function(){
-												echo 'This is a [Closure]' . PHP_EOL;
+											function(\Emylie\Routing\Routeable $request){
+												echo 'This is a [Closure], taking: '. print_r($request, true) . PHP_EOL;
 											},
 											['var'=>'abc']));
 $dispatcher->dispatch($request);
