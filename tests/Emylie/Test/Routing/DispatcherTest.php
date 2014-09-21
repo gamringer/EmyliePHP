@@ -11,35 +11,75 @@ namespace Emylie\Test\Routing {
 
     class DispatcherTest extends \PHPUnit_Framework_TestCase {
 
-        public function testDispatch() {
-        	
-        	$request = new MockRouteable();
-        	$router = new Router();
+        public function testRules() {
+            
+            $router = new Router();
             $dispatcher = new Dispatcher($router);
+
+            $this->assertEmpty($dispatcher->getRules());
+            $dispatcher->addRule(function($destination){return false;});
+
+            $this->assertNotEmpty($dispatcher->getRules());
+
+            $dispatcher->clearRules();
+            $this->assertEmpty($dispatcher->getRules());
+        }
+
+        public function testDispatch() {
+            
+            $request = new MockRouteable('mock route');
+            $router = new Router();
+            $dispatcher = new Dispatcher($router);
+
+            $dispatcher->clearRules();
+            $dispatcher->addRule(function($destination){
+                if ($destination instanceof \Closure) {
+                    return $destination;
+                }
+
+                return false;
+            });
+            $dispatcher->addRule(function($destination){
+                if (preg_match('/^(?<class>[\w\\\\]+)(?<type>\-\>|::)(?<method>[\w\\\\]+)$/', $destination, $match)) {
+                    $return = [];
+                    if ($match['type'] == '->') {
+                        $return[] = new $match['class']();
+                    
+                    }elseif ($match['type'] == '::') {
+                        $return[] = $match['class'];
+                    }
+                    
+                    $return[] = $match['method'];
+
+                    return $return;
+                }
+                
+                return false;
+            });
 
             $route = new Route('fooRoute', '.*', 
                                function(Routeable $request){return 'Closure';},
                                ['var'=>'abc']);
-        	$router->clearRoutes();
+            $router->clearRoutes();
             $router->addRoute($route);
-        	$result = $dispatcher->dispatch($request);
-        	$this->assertEquals($result, 'Closure');
+            $result = $dispatcher->dispatch($request);
+            $this->assertEquals($result, 'Closure');
 
-        	$route = new Route('fooRoute', '.*', 
+            $route = new Route('fooRoute', '.*', 
                                'Emylie\Test\Resources\Views\MockView->dynamicMethod',
                                ['var'=>'abc']);
-        	$router->clearRoutes();
+            $router->clearRoutes();
             $router->addRoute($route);
-        	$result = $dispatcher->dispatch($request);
-        	$this->assertEquals($result, 'Emylie\Test\Resources\Views\MockView::dynamicMethod');
+            $result = $dispatcher->dispatch($request);
+            $this->assertEquals($result, 'Emylie\Test\Resources\Views\MockView::dynamicMethod');
 
-        	$route = new Route('fooRoute', '.*', 
+            $route = new Route('fooRoute', '.*', 
                                'Emylie\Test\Resources\Views\MockView::staticMethod',
                                ['var'=>'abc']);
-        	$router->clearRoutes();
+            $router->clearRoutes();
             $router->addRoute($route);
-        	$result = $dispatcher->dispatch($request);
-        	$this->assertEquals($result, 'Emylie\Test\Resources\Views\MockView::staticMethod');
+            $result = $dispatcher->dispatch($request);
+            $this->assertEquals($result, 'Emylie\Test\Resources\Views\MockView::staticMethod');
         }
 
         /**
@@ -47,7 +87,7 @@ namespace Emylie\Test\Routing {
          */
         public function testDispatchException() {
         	
-        	$request = new MockRouteable();
+        	$request = new MockRouteable('mock route');
         	$router = new Router();
             $dispatcher = new Dispatcher($router);
 
