@@ -19,10 +19,10 @@ namespace Emylie\Test\Routing {
             $this->assertEquals($route->getDestination(), $destination);
             $this->assertEquals(serialize($route->getData()), serialize($data));
 
-            $this->assertNotEquals($route->getName(), '');
-            $this->assertNotEquals($route->getPattern(), '');
-            $this->assertNotEquals($route->getDestination(), '');
-            $this->assertNotEquals(serialize($route->getData()), serialize([]));
+            $this->assertNotEmpty($route->getName());
+            $this->assertNotEmpty($route->getPattern());
+            $this->assertNotEmpty($route->getDestination());
+            $this->assertNotEmpty($route->getData());
         }
 
         public function testMatchesProperly() {
@@ -38,6 +38,38 @@ namespace Emylie\Test\Routing {
             $this->assertFalse($route->match('/foob'));
             $this->assertFalse($route->match('/foo'));
             $this->assertFalse($route->match('fooaaaaaaaa'));
+        }
+
+        public function testExtractsProperData() {
+            
+            $name = 'fooRoute';
+            $pattern = '/(?<vartest>foo[a]+)/?.*';
+            $destination = '\examples\Resources\Views\DefaultView';
+            $data = ['bar' => 'allo'];
+            $route = new Route($name, $pattern, $destination, $data);
+
+            $extract = null;
+            $matches = $route->match('/fooa/lolalole', $extract);
+
+            $this->assertArrayHasKey('vartest', $extract);
+            $this->assertArrayHasKey('bar', $extract);
+        }
+
+        public function testExtractsOverridesDefaultData() {
+            
+            $name = 'fooRoute';
+            $pattern = '/(?<bar>foo[a]+)/?.*';
+            $destination = '\examples\Resources\Views\DefaultView';
+            $data = ['foo' => 'bonjour', 'bar' => 'allo'];
+            $route = new Route($name, $pattern, $destination, $data);
+
+            $extract = null;
+            $matches = $route->match('/fooa/lolalole', $extract);
+
+            $this->assertArrayHasKey('foo', $extract);
+            $this->assertEquals($data['foo'], $extract['foo']);
+            $this->assertArrayHasKey('bar', $extract);
+            $this->assertEquals('fooa', $extract['bar']);
         }
         
     }

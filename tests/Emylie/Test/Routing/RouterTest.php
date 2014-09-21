@@ -59,7 +59,7 @@ namespace Emylie\Test\Routing {
             $route = new Route($name, $pattern, $destination, $data);
             $router->addRoute($route);
 
-            $request = new MockRouteable();
+            $request = new MockRouteable('mock route');
             $route = $router->route($request);
 
             $this->assertInstanceOf('\Emylie\Routing\Route', $route);
@@ -72,7 +72,7 @@ namespace Emylie\Test\Routing {
             
             $router = new \Emylie\Routing\Router();
 
-            $request = new MockRouteable();
+            $request = new MockRouteable('mock route');
             $route = $router->route($request);
         }
         

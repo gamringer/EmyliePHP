@@ -3,13 +3,27 @@
 namespace Emylie\Test\Resources\Routing {
 
     use \Emylie\Routing\Routeable;
+    use \Emylie\Routing\Ventureable;
 
-    class MockRouteable implements Routeable {
+    class MockRouteable implements Routeable
+    {
 
-        public function getTarget() {
-            
-            return 'mock target';
+        private $target;
+
+        public function __construct($target)
+        {
+            $this->target = $target;
         }
+
+        public function getTarget()
+        {
+            return $this->target;
+        }
+
+		public function discover(Ventureable $route)
+		{
+            return $route->match($this->getTarget());
+		}
         
     }
 }
