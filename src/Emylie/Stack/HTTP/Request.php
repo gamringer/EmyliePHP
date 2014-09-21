@@ -81,17 +81,26 @@ namespace Emylie\Stack\HTTP
 
 		public static function fromGlobals()
 		{
-			if(!isset($_SERVER['REQUEST_METHOD']) || !isset($_SERVER['REQUEST_URI'])){
-				throw new \Exception('Can not parse globals');
+			if (
+			    !isset($_SERVER['REQUEST_METHOD'])
+			 || !isset($_SERVER['REQUEST_URI'])
+			 || !isset($_SERVER['QUERY_STRING'])
+			){
+				throw new Exception('Can not parse globals');
 			}
-			
+
 			$uriParts = explode('?', $_SERVER['REQUEST_URI'], 2);
 			$request = new static($_SERVER['REQUEST_METHOD'], $uriParts[0],
-			                      apache_request_headers(), $_GET, $_POST);
+			                      static::getGlobalHeaders(), $_GET, $_POST);
 			$request->setRawQuery($_SERVER['QUERY_STRING']);
 			$request->setRawBody(fopen('php://input', 'r'));
 
 			return $request;
+		}
+
+		public static function getGlobalHeaders()
+		{
+			return getallheaders();
 		}
 	}
 }
