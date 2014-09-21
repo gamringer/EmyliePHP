@@ -29,10 +29,10 @@ namespace Emylie\Routing
 			return $this;
 		}
 
-		public function route(Routeable $request, &$extract = null)
+		public function route(Routeable $request)
 		{
 			foreach ($this->routes as $route) {
-				if($route->match($request->getTarget(), $extract)){
+				if ($request->discover($route)) {
 					return $route;
 				}
 			}

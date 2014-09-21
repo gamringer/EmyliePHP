@@ -4,6 +4,7 @@ namespace Emylie\Stack\HTTP
 {
 
 	use \Emylie\Routing\Routeable;
+	use \Emylie\Routing\Ventureable;
 
 	class Request implements Routeable
 	{
@@ -13,14 +14,16 @@ namespace Emylie\Stack\HTTP
 		protected $headers;
 		protected $queryData;
 		protected $bodyData;
+		protected $routeData;
+		protected $route;
 
-		protected $rawQuery;
-		protected $rawBody;
+		protected $rawQuery = '';
+		protected $rawBody = '';
 
-		public function __construct($verb, $path, $headers, Array $queryData, Array $bodyData)
+		public function __construct($verb, $path, Array $headers = [],Array $queryData = [], Array $bodyData = [])
 		{
-			$this->verb = $verb;
-			$this->path = $path;
+			$this->verb = (string) $verb;
+			$this->path = (string) $path;
 			$this->headers = $headers;
 			$this->queryData = $queryData;
 			$this->bodyData = $bodyData;
@@ -38,7 +41,7 @@ namespace Emylie\Stack\HTTP
 
 		public function setRawBody($value)
 		{
-			$this->rawBody = $value;
+			$this->rawBody = (string) $value;
 
 			return $this;
 		}
@@ -50,9 +53,30 @@ namespace Emylie\Stack\HTTP
 
 		public function setRawQuery($value)
 		{
-			$this->rawQuery = $value;
+			$this->rawQuery = (string) $value;
 
 			return $this;
+		}
+
+		public function getRoute()
+		{
+			return $this->route;
+		}
+
+		public function getRouteData()
+		{
+			return $this->routeData;
+		}
+
+		public function discover(Ventureable $route)
+		{
+			if($route->match($this->getTarget(), $this->routeData)){
+				$this->route = $route;
+
+				return true;
+			}
+
+			return false;
 		}
 
 		public static function fromGlobals()

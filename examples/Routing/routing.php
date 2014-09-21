@@ -24,8 +24,6 @@ $router->addRoute(new \Emylie\Routing\Route('bar', '.*',
 											['var'=>'abc']));
 
 //	Return [Ventureable] Object and populates $extract
-$extract = null;
-$route = $router->route($request, $extract);
+$route = $router->route($request);
 
 var_dump($route);
-var_dump($extract);
