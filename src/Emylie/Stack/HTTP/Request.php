@@ -84,7 +84,6 @@ namespace Emylie\Stack\HTTP
 			if (
 			    !isset($_SERVER['REQUEST_METHOD'])
 			 || !isset($_SERVER['REQUEST_URI'])
-			 || !isset($_SERVER['QUERY_STRING'])
 			){
 				throw new Exception('Can not parse globals');
 			}
@@ -92,7 +91,9 @@ namespace Emylie\Stack\HTTP
 			$uriParts = explode('?', $_SERVER['REQUEST_URI'], 2);
 			$request = new static($_SERVER['REQUEST_METHOD'], $uriParts[0],
 			                      static::getGlobalHeaders(), $_GET, $_POST);
-			$request->setRawQuery($_SERVER['QUERY_STRING']);
+			if(isset($uriParts[1])){
+				$request->setRawQuery($uriParts[1]);
+			}
 			$request->setRawBody(fopen('php://input', 'r'));
 
 			return $request;
