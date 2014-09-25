@@ -41,7 +41,7 @@ namespace Emylie\Stack\HTTP
 
 		public function setRawBody($value)
 		{
-			$this->rawBody = (string) $value;
+			$this->rawBody = $value;
 
 			return $this;
 		}
