@@ -2,7 +2,9 @@
 
 include dirname(__FILE__).'/../../SplClassLoader.php';
 (new \SplClassLoader('examples', dirname(__FILE__).'/../..'))->register();
-(new \SplClassLoader('Emylie', dirname(__FILE__).'/../../src'))->register();
+//(new \SplClassLoader('Emylie', dirname(__FILE__).'/../../src'))->register();
+
+include dirname(__FILE__).'/../../vendor/autoload.php';
 
 $request = new \Emylie\Stack\HTTP\Request('GET', '/examples/Stack/HTTPResponseApplication.php',
 	                                          [], [], []);
