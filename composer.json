@@ -11,9 +11,9 @@
         "php": ">=5.4"
     },
     "autoload": {
-        "psr-0": {
-            "Emylie": "src/",
-            "Emylie\\Test": "test/"
+        "psr-4": {
+            "Emylie\\": "src/",
+            "Emylie\\Test\\": "test/"
         }
     }
 }
