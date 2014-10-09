@@ -180,7 +180,6 @@ namespace Emylie\IO\Websocket {
 						'ping' => $opcodeBits == 0x9,
 						'pong' => $opcodeBits == 0xa,
 					];
-					print_r($header);
 
 					$content = $this->recv($header);
 
