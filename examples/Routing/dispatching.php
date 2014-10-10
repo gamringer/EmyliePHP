@@ -1,8 +1,6 @@
 <?php
 
-include dirname(__FILE__).'/../../SplClassLoader.php';
-(new \SplClassLoader('examples', dirname(__FILE__).'/../..'))->register();
-(new \SplClassLoader('Emylie', dirname(__FILE__).'/../../src'))->register();
+include dirname(__FILE__).'/../../vendor/autoload.php';
 
 $request = new \Emylie\Stack\HTTP\Request('GET', '/foo', [], [], []);
 $router = new \Emylie\Routing\Router();
@@ -49,7 +47,7 @@ $dispatcher->dispatch($request);
  */
 $router->clearRoutes();
 $router->addRoute(new \Emylie\Routing\Route('bar', '.*',
-											'\examples\Resources\Views\DefaultView::staticMethod',
+											'\Emylie\Example\Resources\Views\DefaultView::staticMethod',
 											['var'=>'abc']));
 $dispatcher->dispatch($request);
 
@@ -58,7 +56,7 @@ $dispatcher->dispatch($request);
  */
 $router->clearRoutes();
 $router->addRoute(new \Emylie\Routing\Route('bar', '.*',
-											'\examples\Resources\Views\DefaultView->dynamicMethod',
+											'\Emylie\Example\Resources\Views\DefaultView->dynamicMethod',
 											['var'=>'abc']));
 $dispatcher->dispatch($request);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace examples\Resources\Views
+namespace Emylie\Example\Resources\Views
 {
 	class DefaultView
 	{
