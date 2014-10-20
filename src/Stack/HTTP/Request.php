@@ -5,73 +5,110 @@ namespace Emylie\Stack\HTTP
 
 	use \Emylie\Routing\Routeable;
 	use \Emylie\Routing\Ventureable;
+	use \Psr\Http\Message\StreamableInterface;
 
 	class Request implements Routeable
 	{
 
-		protected $verb;
+		protected $method;
 		protected $path;
 		protected $headers;
-		protected $queryData;
-		protected $bodyData;
-		protected $routeData;
-		protected $route;
+		protected $query;
+		protected $body;
+		protected $attributes = [];
+		protected $queryParams = [];
 
-		protected $rawQuery = '';
-		protected $rawBody = '';
-
-		public function __construct($verb, $path, Array $headers = [],Array $queryData = [], Array $bodyData = [])
+		public function __construct($method, $path, Array $headers = [], Array $queryParams = [])
 		{
-			$this->verb = (string) $verb;
+			$this->method = (string) $method;
 			$this->path = (string) $path;
 			$this->headers = $headers;
-			$this->queryData = $queryData;
-			$this->bodyData = $bodyData;
+			$this->queryParams = $queryParams;
 		}
 
-		public function getTarget()
+		public function setMethod($method)
 		{
-			return $this->verb.' '.$this->path;
+			return $this->method = (string) $method;
 		}
 
-		public function getRawBody()
+		public function getMethod()
 		{
-			return $this->rawBody;
+			return $this->method;
 		}
 
-		public function setRawBody($value)
+		public function setPath($path)
 		{
-			$this->rawBody = $value;
+			return $this->path = (string) $path;
+		}
+
+		public function getPath()
+		{
+			return $this->path;
+		}
+
+		public function getBody()
+		{
+			return $this->body;
+		}
+
+		public function setBody(StreamableInterface $value)
+		{
+			$this->body = $value;
 
 			return $this;
 		}
 
-		public function getRawQuery()
+		public function getQuery()
 		{
-			return $this->rawQuery;
+			if ($this->query == null) {
+				$this->query = http_build_query($this->queryParams);
+			}
+
+			return $this->query;
 		}
 
-		public function setRawQuery($value)
+		public function setQuery($query)
 		{
-			$this->rawQuery = (string) $value;
+			$this->queryParams = [];
+
+			return $this->query = (string) $query;
+		}
+
+		public function getQueryParams()
+		{
+			return $this->queryParams;
+		}
+
+		public function setQueryParams(Array $params)
+		{
+			$this->query = null;
+			$this->queryParams = $params;
 
 			return $this;
 		}
 
-		public function getRoute()
+		public function addQueryParams(Array $params)
 		{
-			return $this->route;
+			$this->queryParams = array_merge($this->queryParams, $params);
+
+			return $this;
 		}
 
-		public function getRouteData()
+		public function getAttributes()
 		{
-			return $this->routeData;
+			return $this->attributes;
 		}
 
-		public function discover(Ventureable $route)
+		public function setAttributes(\ArrayAccess $attributes)
 		{
-			if($route->match($this->getTarget(), $this->routeData)){
-				$this->route = $route;
+			return $this->attributes = $attributes;
+		}
+
+		public function discover(Ventureable $route, callable $scope)
+		{
+			$extract = null;
+			if($route->match($scope($this), $extract)){
+				$this->attributes = array_merge($extract, $this->attributes);
 
 				return true;
 			}
@@ -92,9 +129,9 @@ namespace Emylie\Stack\HTTP
 			$request = new static($_SERVER['REQUEST_METHOD'], $uriParts[0],
 			                      static::getGlobalHeaders(), $_GET, $_POST);
 			if(isset($uriParts[1])){
-				$request->setRawQuery($uriParts[1]);
+				$request->setQuery($uriParts[1]);
 			}
-			$request->setRawBody(fopen('php://input', 'r'));
+			$request->setBody(new StreamReader(fopen('php://input', 'r')));
 
 			return $request;
 		}
