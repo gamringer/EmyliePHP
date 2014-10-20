@@ -11,6 +11,9 @@ $request = new \Emylie\Stack\HTTP\Request('GET', '/foo',
  *	Define Router
  */
 $router = new \Emylie\Routing\Router();
+$router->setScope(function(\Emylie\Stack\HTTP\Request $request){
+	return $request->getMethod().' '.$request->getPath();
+});
 
 //	Define Strict Route
 $router->addRoute(new \Emylie\Routing\Route('foo', '(GET|POST) /(?<fap>foo)',

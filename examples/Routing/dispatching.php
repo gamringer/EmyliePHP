@@ -2,7 +2,7 @@
 
 include dirname(__FILE__).'/../../vendor/autoload.php';
 
-$request = new \Emylie\Stack\HTTP\Request('GET', '/foo', [], [], []);
+$request = new \Emylie\Stack\HTTP\Request('GET', '/foo', [], []);
 $router = new \Emylie\Routing\Router();
 $dispatcher = new \Emylie\Routing\Dispatcher($router);
 
@@ -30,6 +30,11 @@ $dispatcher->addRule(function($destination){
 	
 	return false;
 });
+
+$router->setScope(function(\Emylie\Stack\HTTP\Request $request){
+	return $request->getMethod().' '.$request->getPath();
+});
+
 
 /**
  *  Call Closure

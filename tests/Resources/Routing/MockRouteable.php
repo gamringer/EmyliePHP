@@ -20,7 +20,7 @@ namespace Emylie\Test\Resources\Routing {
             return $this->target;
         }
 
-		public function discover(Ventureable $route)
+		public function discover(Ventureable $route, callable $scope)
 		{
             return $route->match($this->getTarget());
 		}

@@ -9,10 +9,11 @@ namespace Emylie\Routing
 	{
 
 		protected $routes = [];
+		protected $scope;
 
-		public function __construct()
+		public function setScope(callable $scope)
 		{
-			
+			$this->scope = $scope->bindTo($this);			
 		}
 
 		public function clearRoutes()
@@ -31,11 +32,11 @@ namespace Emylie\Routing
 
 			return $this;
 		}
-
+		
 		public function route(Routeable $request)
 		{
 			foreach ($this->routes as $route) {
-				if ($request->discover($route)) {
+				if ($request->discover($route, $this->scope)) {
 					return $route;
 				}
 			}
