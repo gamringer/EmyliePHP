@@ -8,7 +8,9 @@
         }
     ],
     "require": {
-        "php": ">=5.4"
+        "php": ">=5.4",
+        "psr/log": "dev-master",
+        "psr/http-message": "dev-master"
     },
     "autoload": {
         "psr-4": {
