@@ -2,7 +2,9 @@
 
 namespace Emylie\IO;
 
-class StreamReader
+use \Psr\Http\Message\StreamableInterface;
+
+class StreamReader implements StreamableInterface
 {
 	private $stream;
 
